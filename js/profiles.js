@@ -53,3 +53,14 @@ users.forEach(user => {
 
   container.appendChild(card);
 });
+card.querySelector(".like").addEventListener("click", () => {
+  showMatchPopup(); // show match popup
+  card.remove();    // remove the card after match
+});
+function showMatchPopup() {
+  document.getElementById("match-popup").classList.remove("hidden");
+}
+
+function closeMatch() {
+  document.getElementById("match-popup").classList.add("hidden");
+}
