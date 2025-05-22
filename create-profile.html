@@ -56,6 +56,9 @@
 </head>
 <body>
 
+  <!-- Navbar placeholder -->
+  <div id="navbar"></div>
+
   <h2>Create / Update Your Profile</h2>
 
   <form id="profileForm">
@@ -68,6 +71,22 @@
     <p class="message" id="message"></p>
   </form>
 
+  <!-- Footer placeholder -->
+  <div id="footer"></div>
+
+  <!-- Dynamic navbar/footer loader -->
+  <script>
+    async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
+
+    loadComponent("navbar", "navbar.html");
+    loadComponent("footer", "footer.html");
+  </script>
+
+  <!-- Firebase integration -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
