@@ -4,15 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SimpZone Login</title>
-  <script type="module" src="js/auth.js" defer>
-   const firebaseConfig = {
-  apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
-  authDomain: "simpzone-c261f.firebaseapp.com",
-  projectId: "simpzone-c261f",
-  storageBucket: "simpzone-c261f.firebasestorage.app",
-  messagingSenderId: "112722316822",
-  appId: "1:112722316822:web:40f25acde13d98821f2f37"
-};
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const messageEl = document.getElementById("message");
+
+      document.getElementById("loginBtn").addEventListener("click", () => {
+        signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
+          .then((userCredential) => {
+            localStorage.setItem("user", userCredential.user.email);
+            window.location.href = "index.html";
+          })
+          .catch((error) => {
+            messageEl.textContent = error.message;
+          });
+      });
+
+      document.getElementById("registerBtn").addEventListener("click", () => {
+        createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
+          .then((userCredential) => {
+            localStorage.setItem("user", userCredential.user.email);
+            window.location.href = "index.html";
+          })
+          .catch((error) => {
+            messageEl.textContent = error.message;
+          });
+      });
+    });
   </script>
 </head>
 <body>
