@@ -89,6 +89,11 @@
       text-align: center;
       margin-top: 2rem;
     }
+
+    /* Hide activity buttons and profile cards before login */
+    .activity-buttons, .profile-cards {
+      display: none;
+    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -110,26 +115,36 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Check auth state and update welcome message
+    // Check auth state and update welcome message and visibility of buttons
     onAuthStateChanged(auth, async (user) => {
+      const activityButtons = document.querySelectorAll(".activity-buttons");
+      const profileCards = document.querySelectorAll(".profile-cards");
+      const welcomeMessage = document.getElementById("welcomeMessage");
+
       if (user) {
+        // User is logged in
         try {
           const docRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const userData = docSnap.data();
-            document.getElementById("welcomeMessage").textContent = `Welcome ${userData.name} 💘`;
+            welcomeMessage.textContent = `Welcome ${userData.name} 💘`;
             localStorage.setItem("user", user.uid);
           } else {
-            document.getElementById("welcomeMessage").textContent = "Welcome 💘";
+            welcomeMessage.textContent = "Welcome 💘";
           }
+          // Show buttons and content for logged-in users
+          activityButtons.forEach(button => button.style.display = "block");
+          profileCards.forEach(card => card.style.display = "block");
         } catch (err) {
           console.error("Failed to fetch user data:", err);
-          document.getElementById("welcomeMessage").textContent = "Welcome 💘";
+          welcomeMessage.textContent = "Welcome 💘";
         }
       } else {
-        localStorage.removeItem("user");
-        window.location.href = "login.html";
+        // User is not logged in
+        welcomeMessage.textContent = "Please log in to continue 💘";
+        activityButtons.forEach(button => button.style.display = "none");
+        profileCards.forEach(card => card.style.display = "none");
       }
     });
 
@@ -164,23 +179,30 @@
   </div>
 
   <h2 id="welcomeMessage">Loading...</h2>
-  <button onclick="logout()">Logout</button>
-  <button><a href="profile.html">My Profile</a></button>
-  <button onclick="goToProfile()">View/Edit My Profile</button>
-  
-  <div id="mainContent">
-    <div class="profile-card">
-      <img src="images/user1.jpg" alt="User" class="profile-pic">
-      <h3>Emily, 24</h3>
-      <p>Loves coffee, travel, and cats 😻</p>
-      <button onclick="match()">💘 Match</button>
-    </div>
 
-    <div class="profile-card">
-      <img src="images/user2.jpg" alt="User" class="profile-pic">
-      <h3>Jason, 27</h3>
-      <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
-      <button onclick="match()">💘 Match</button>
+  <!-- Buttons visible only when logged in -->
+  <div class="activity-buttons">
+    <button onclick="logout()">Logout</button>
+    <button><a href="profile.html">My Profile</a></button>
+    <button onclick="goToProfile()">View/Edit My Profile</button>
+  </div>
+
+  <div id="mainContent">
+    <!-- Profile cards visible only when logged in -->
+    <div class="profile-cards">
+      <div class="profile-card">
+        <img src="images/user1.jpg" alt="User" class="profile-pic">
+        <h3>Emily, 24</h3>
+        <p>Loves coffee, travel, and cats 😻</p>
+        <button onclick="match()">💘 Match</button>
+      </div>
+
+      <div class="profile-card">
+        <img src="images/user2.jpg" alt="User" class="profile-pic">
+        <h3>Jason, 27</h3>
+        <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
+        <button onclick="match()">💘 Match</button>
+      </div>
     </div>
   </div>
 
