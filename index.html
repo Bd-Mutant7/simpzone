@@ -55,6 +55,40 @@
       0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
       100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
     }
+
+    /* Navbar Styling */
+    .navbar {
+      background-color: #ff4da6;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 8px 16px;
+    }
+
+    .navbar a:hover {
+      background-color: #d63384;
+      border-radius: 4px;
+    }
+
+    /* Footer Styling */
+    .footer {
+      background-color: #ff4da6;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -121,10 +155,19 @@
 </head>
 <body>
 
+  <!-- Navbar -->
+  <div class="navbar">
+    <a href="index.html">Home</a>
+    <a href="matches.html">Matches</a>
+    <a href="messages.html">Messages</a>
+    <a href="login.html" onclick="logout()">Logout</a>
+  </div>
+
   <h2 id="welcomeMessage">Loading...</h2>
   <button onclick="logout()">Logout</button>
   <button><a href="profile.html">My Profile</a></button>
   <button onclick="goToProfile()">View/Edit My Profile</button>
+  
   <div id="mainContent">
     <div class="profile-card">
       <img src="images/user1.jpg" alt="User" class="profile-pic">
@@ -142,6 +185,11 @@
   </div>
 
   <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 SimpZone | All rights reserved</p>
+  </div>
 
 </body>
 </html>
