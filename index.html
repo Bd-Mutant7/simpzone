@@ -4,25 +4,101 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SimpZone</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffe6f0;
+      margin: 0;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h2 {
+      color: #d63384;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      background-color: #ff4da6;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 300px;
+      margin: 2rem auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .profile-pic {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .hearts {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      animation: float 1s ease-in-out;
+      z-index: 999;
+    }
+
+    @keyframes float {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
+    }
+  </style>
 </head>
 <body>
+
   <h2 id="welcomeMessage">Welcome!</h2>
+  <button onclick="logout()">Logout</button>
 
   <div id="mainContent">
-    <!-- This is where your real content goes -->
-    <p>Ready to find your match?</p>
-    <button onclick="alert('Matching feature coming soon!')">Find Matches</button>
+    <div class="profile-card">
+      <img src="images/user1.jpg" alt="User" class="profile-pic">
+      <h3>Emily, 24</h3>
+      <p>Loves coffee, travel, and cats 😻</p>
+      <button onclick="match()">💘 Match</button>
+    </div>
   </div>
 
-  <script>
-    const user = localStorage.getItem("user");
+  <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
 
+  <script>
+    // Login check
+    const user = localStorage.getItem("user");
     if (user) {
       document.getElementById("welcomeMessage").textContent = "Welcome Spice 💘";
     } else {
       window.location.href = "login.html";
     }
-  </script>
-</body>
 
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "login.html";
+    }
+
+    function match() {
+      // Play match sound
+      document.getElementById("matchSound").play();
+
+      // Show animated hearts
+      const hearts = document.createElement('div');
+      hearts.innerHTML = "💖💞💘💗";
+      hearts.classList.add('hearts');
+      document.body.appendChild(hearts);
+      setTimeout(() => hearts.remove(), 1500);
+    }
+  </script>
+
+</body>
 </html>
