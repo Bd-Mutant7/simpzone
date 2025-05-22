@@ -9,61 +9,36 @@
       font-family: 'Segoe UI', sans-serif;
       background: #ffe6f0;
       margin: 0;
-      padding: 0;
-    }
-
-    nav {
-      background-color: #ff4da6;
-      color: white;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    nav a {
-      color: white;
-      margin-left: 1rem;
-      text-decoration: none;
-      font-weight: bold;
+      padding: 2rem;
+      text-align: center;
     }
 
     h2 {
-      text-align: center;
-      margin-top: 1rem;
       color: #d63384;
     }
 
-    .profiles {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      padding: 2rem;
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      background-color: #ff4da6;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
     .profile-card {
       background: white;
       border-radius: 12px;
       padding: 20px;
+      max-width: 300px;
+      margin: 2rem auto;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center;
     }
 
     .profile-pic {
       width: 100%;
-      max-height: 250px;
-      object-fit: cover;
       border-radius: 12px;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      border: none;
-      background-color: #ff4da6;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
     }
 
     .hearts {
@@ -81,33 +56,12 @@
       100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
     }
   </style>
-</head>
-<body>
 
-  <!-- Navbar -->
-  <nav>
-    <div>SimpZone 💘</div>
-    <div>
-      <a href="index.html">Home</a>
-      <a href="create-profile.html">Profile</a>
-      <a href="login.html">Login</a>
-      <a href="register.html">Register</a>
-      <a href="#" onclick="logout()">Logout</a>
-    </div>
-  </nav>
-
-  <h2 id="welcomeMessage">Welcome!</h2>
-
-  <div class="profiles" id="profilesContainer">
-    <!-- User profiles will appear here -->
-  </div>
-
-  <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
-
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -122,53 +76,40 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let currentUser = null;
-
-    // Check login state
+    // Auth check and fetch user name
     onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
       if (user) {
-        document.getElementById("welcomeMessage").textContent = `Welcome ${user.email} 💘`;
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            document.getElementById("welcomeMessage").textContent = `Welcome ${userData.name} 💘`;
+          } else {
+            document.getElementById("welcomeMessage").textContent = "Welcome 💘";
+          }
+        } catch (err) {
+          console.error("Failed to fetch user data:", err);
+          document.getElementById("welcomeMessage").textContent = "Welcome 💘";
+        }
       } else {
-        document.getElementById("welcomeMessage").textContent = "Welcome Guest 💘";
+        window.location.href = "login.html";
       }
-      loadProfiles(); // Load profiles either way
     });
 
-    async function loadProfiles() {
-      const profilesContainer = document.getElementById("profilesContainer");
-      profilesContainer.innerHTML = "";
+    // Global functions
+    window.logout = () => {
+      localStorage.removeItem("user");
+      auth.signOut().then(() => window.location.href = "login.html");
+    };
 
-      const querySnapshot = await getDocs(collection(db, "users"));
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const card = document.createElement("div");
-        card.className = "profile-card";
-        card.innerHTML = `
-          <img src="${data.photoURL || 'images/default.jpg'}" class="profile-pic" alt="${data.name}">
-          <h3>${data.name}, ${data.age}</h3>
-          <p>${data.bio}</p>
-          ${currentUser ? `<button onclick="match()">💘 Match</button>` : ""}
-        `;
-        profilesContainer.appendChild(card);
-      });
-    }
+    window.goToProfile = () => {
+      window.location.href = "create-profile.html";
+    };
 
-    function match() {
+    window.match = () => {
       document.getElementById("matchSound").play();
       const hearts = document.createElement('div');
       hearts.innerHTML = "💖💞💘💗";
       hearts.classList.add('hearts');
-      document.body.appendChild(hearts);
-      setTimeout(() => hearts.remove(), 1500);
-    }
-
-    window.logout = function () {
-      signOut(auth).then(() => {
-        location.reload();
-      });
-    };
-  </script>
-
-</body>
-</html>
+      document.body.appendChild(he
