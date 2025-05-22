@@ -1,96 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Profile - SimpZone</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create or Update Profile - SimpZone</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff0f5;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h2 {
+      color: #d63384;
+    }
+
+    form {
+      background: white;
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #ff4da6;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .message {
+      margin-top: 10px;
+      color: green;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Create Your Profile</h2>
-        <form id="profileForm">
-            <div>
-                <label for="name">Name</label>
-                <input type="text" id="name" placeholder="Enter your name" required />
-            </div>
 
-            <div>
-                <label for="age">Age</label>
-                <input type="number" id="age" placeholder="Enter your age" required />
-            </div>
+  <h2>Create / Update Your Profile</h2>
 
-            <div>
-                <label for="bio">Bio</label>
-                <textarea id="bio" placeholder="Tell us about yourself" required></textarea>
-            </div>
+  <form id="profileForm">
+    <input type="text" id="name" placeholder="Your Name" required />
+    <input type="number" id="age" placeholder="Your Age" required />
+    <textarea id="bio" rows="4" placeholder="Write a short bio..." required></textarea>
+    <input type="file" id="profilePic" accept="image/*" />
+    <img id="preview" src="" alt="Profile Picture Preview" style="display:none;" />
+    <button type="submit">Save Profile</button>
+    <p class="message" id="message"></p>
+  </form>
 
-            <div>
-                <label for="profilePic">Profile Picture (Optional)</label>
-                <input type="file" id="profilePic" accept="image/*" />
-            </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-            <button type="submit">Save Profile</button>
-            <p id="message"></p>
-        </form>
-    </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
 
-    <script type="module">
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-        import { app } from './firebase.js'; // Ensure this import is correct
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+    const nameInput = document.getElementById("name");
+    const ageInput = document.getElementById("age");
+    const bioInput = document.getElementById("bio");
+    const profilePicInput = document.getElementById("profilePic");
+    const previewImg = document.getElementById("preview");
+    const form = document.getElementById("profileForm");
+    const message = document.getElementById("message");
 
-        const profileForm = document.getElementById("profileForm");
-        const messageEl = document.getElementById("message");
-        const nameInput = document.getElementById("name");
-        const ageInput = document.getElementById("age");
-        const bioInput = document.getElementById("bio");
-        const profilePicInput = document.getElementById("profilePic");
+    let currentUserUID = null;
 
-        profileForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
 
-            const user = auth.currentUser;
-            if (!user) {
-                messageEl.textContent = "You need to be logged in to create a profile.";
-                return;
-            }
+      currentUserUID = user.uid;
+      const userDoc = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userDoc);
 
-            // Collect profile data
-            const name = nameInput.value;
-            const age = ageInput.value;
-            const bio = bioInput.value;
-            let profilePicUrl = "";
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        nameInput.value = data.name || "";
+        ageInput.value = data.age || "";
+        bioInput.value = data.bio || "";
+        if (data.profilePic) {
+          previewImg.src = data.profilePic;
+          previewImg.style.display = "block";
+        }
+      }
+    });
 
-            // Upload profile picture if provided
-            if (profilePicInput.files.length > 0) {
-                const file = profilePicInput.files[0];
-                const storageRef = ref(storage, `profilePics/${user.uid}`);
-                await uploadBytes(storageRef, file);
-                profilePicUrl = await storageRef.getDownloadURL();
-            }
+    profilePicInput.addEventListener("change", () => {
+      const file = profilePicInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          previewImg.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
-            // Save profile data to Firestore
-            try {
-                const userDoc = doc(db, "users", user.uid);
-                await setDoc(userDoc, {
-                    name,
-                    age,
-                    bio,
-                    profilePicUrl,
-                    createdAt: new Date().toISOString(),
-                }, { merge: true });
-                messageEl.textContent = "Profile saved successfully!";
-                window.location.href = "index.html"; // Redirect to the home page or another page
-            } catch (error) {
-                messageEl.textContent = "Error saving profile: " + error.message;
-            }
-        });
-    </script>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const age = ageInput.value.trim();
+      const bio = bioInput.value.trim();
+      let profilePicData = previewImg.src || "";
+
+      if (!name || !age || !bio) {
+        message.textContent = "All fields are required!";
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", currentUserUID);
+        await setDoc(userRef, {
+          name,
+          age,
+          bio,
+          profilePic: profilePicData,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        message.textContent = "Profile saved successfully!";
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        message.textContent = "Failed to save profile.";
+      }
+    });
+  </script>
 </body>
 </html>
