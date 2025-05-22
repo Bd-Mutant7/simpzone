@@ -2,54 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SimpZone - Find Your Match</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimpZone</title>
 </head>
 <body>
-  <header>
-    <h1>SimpZone</h1>
-    <a href="login.html">
-  <button>Login / Register</button>
-</a>
+  <h2 id="welcomeMessage">Welcome!</h2>
 
   <script>
-  const user = localStorage.getItem("user");
-  if (user) {
-    document.write(`<p>Welcome back, ${user}</p>`);
-  }
-</script>
+    // Get user from localStorage (you stored the email during login)
+    const user = localStorage.getItem("user");
 
-
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="about.html">About</a>
-      <a href="match.html">Find a Match</a>
-      <a href="contact.html">Contact</a>
-    </nav>
-  </header>
-
-  <main>
-    <h2>Welcome to SimpZone 💖</h2>
-    <p>Discover meaningful connections with people who share your interests.</p>
-    <a href="match.html" class="cta-button">Start Matching</a>
-  </main>
-    <h2 class="heading">Meet New People</h2>
-<div id="profile-container"></div>
- <!-- Match Popup Modal -->
-<div id="match-popup" class="match-popup hidden">
-  <div class="match-content">
-    <h2>🎉 It's a match!</h2>
-    <p>You liked someone new!</p>
-    <button onclick="closeMatch()">Close</button>
-  </div>
-</div>
-  <footer>
-    <p>&copy; 2025 SimpZone. All rights reserved.</p>
-  </footer>
- 
-
-  <script src="js/profiles.js"></script>
-
+    if (user) {
+      // Replace email with a friendly name
+      document.getElementById("welcomeMessage").textContent = "Welcome Spice 💘";
+    } else {
+      // Redirect to login if no user is found
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
