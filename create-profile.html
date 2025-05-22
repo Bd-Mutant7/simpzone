@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Profile - SimpZone</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS -->
+</head>
+<body>
+    <div class="container">
+        <h2>Create Your Profile</h2>
+        <form id="profileForm">
+            <div>
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Enter your name" required />
+            </div>
+
+            <div>
+                <label for="age">Age</label>
+                <input type="number" id="age" placeholder="Enter your age" required />
+            </div>
+
+            <div>
+                <label for="bio">Bio</label>
+                <textarea id="bio" placeholder="Tell us about yourself" required></textarea>
+            </div>
+
+            <div>
+                <label for="profilePic">Profile Picture (Optional)</label>
+                <input type="file" id="profilePic" accept="image/*" />
+            </div>
+
+            <button type="submit">Save Profile</button>
+            <p id="message"></p>
+        </form>
+    </div>
+
+    <script type="module">
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+        import { app } from './firebase.js'; // Ensure this import is correct
+
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const profileForm = document.getElementById("profileForm");
+        const messageEl = document.getElementById("message");
+        const nameInput = document.getElementById("name");
+        const ageInput = document.getElementById("age");
+        const bioInput = document.getElementById("bio");
+        const profilePicInput = document.getElementById("profilePic");
+
+        profileForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const user = auth.currentUser;
+            if (!user) {
+                messageEl.textContent = "You need to be logged in to create a profile.";
+                return;
+            }
+
+            // Collect profile data
+            const name = nameInput.value;
+            const age = ageInput.value;
+            const bio = bioInput.value;
+            let profilePicUrl = "";
+
+            // Upload profile picture if provided
+            if (profilePicInput.files.length > 0) {
+                const file = profilePicInput.files[0];
+                const storageRef = ref(storage, `profilePics/${user.uid}`);
+                await uploadBytes(storageRef, file);
+                profilePicUrl = await storageRef.getDownloadURL();
+            }
+
+            // Save profile data to Firestore
+            try {
+                const userDoc = doc(db, "users", user.uid);
+                await setDoc(userDoc, {
+                    name,
+                    age,
+                    bio,
+                    profilePicUrl,
+                    createdAt: new Date().toISOString(),
+                }, { merge: true });
+                messageEl.textContent = "Profile saved successfully!";
+                window.location.href = "index.html"; // Redirect to the home page or another page
+            } catch (error) {
+                messageEl.textContent = "Error saving profile: " + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
