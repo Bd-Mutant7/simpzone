@@ -60,7 +60,7 @@
   <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -76,7 +76,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Auth check and fetch user name
+    // Check auth state and update welcome message
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -85,6 +85,7 @@
           if (docSnap.exists()) {
             const userData = docSnap.data();
             document.getElementById("welcomeMessage").textContent = `Welcome ${userData.name} 💘`;
+            localStorage.setItem("user", user.uid);
           } else {
             document.getElementById("welcomeMessage").textContent = "Welcome 💘";
           }
@@ -93,6 +94,7 @@
           document.getElementById("welcomeMessage").textContent = "Welcome 💘";
         }
       } else {
+        localStorage.removeItem("user");
         window.location.href = "login.html";
       }
     });
@@ -100,7 +102,7 @@
     // Global functions
     window.logout = () => {
       localStorage.removeItem("user");
-      auth.signOut().then(() => window.location.href = "login.html");
+      signOut(auth).then(() => window.location.href = "login.html");
     };
 
     window.goToProfile = () => {
@@ -112,4 +114,34 @@
       const hearts = document.createElement('div');
       hearts.innerHTML = "💖💞💘💗";
       hearts.classList.add('hearts');
-      document.body.appendChild(he
+      document.body.appendChild(hearts);
+      setTimeout(() => hearts.remove(), 1500);
+    };
+  </script>
+</head>
+<body>
+
+  <h2 id="welcomeMessage">Loading...</h2>
+  <button onclick="logout()">Logout</button>
+  <button onclick="goToProfile()">View/Edit My Profile</button>
+
+  <div id="mainContent">
+    <div class="profile-card">
+      <img src="images/user1.jpg" alt="User" class="profile-pic">
+      <h3>Emily, 24</h3>
+      <p>Loves coffee, travel, and cats 😻</p>
+      <button onclick="match()">💘 Match</button>
+    </div>
+
+    <div class="profile-card">
+      <img src="images/user2.jpg" alt="User" class="profile-pic">
+      <h3>Jason, 27</h3>
+      <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
+      <button onclick="match()">💘 Match</button>
+    </div>
+  </div>
+
+  <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
+
+</body>
+</html>
