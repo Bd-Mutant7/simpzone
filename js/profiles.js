@@ -58,8 +58,27 @@ card.querySelector(".like").addEventListener("click", () => {
   card.remove();    // remove the card after match
 });
 function showMatchPopup() {
+  // Show popup
   document.getElementById("match-popup").classList.remove("hidden");
+
+  // Play match sound
+  const audio = new Audio("sounds/match.mp3");
+  audio.play();
+
+  // Drop hearts
+  for (let i = 0; i < 15; i++) {
+    const heart = document.createElement("div");
+    heart.classList.add("heart");
+    heart.style.left = `${Math.random() * 100}%`;
+    heart.innerHTML = "❤️";
+
+    document.body.appendChild(heart);
+
+    // Remove heart after animation
+    setTimeout(() => heart.remove(), 2000);
+  }
 }
+
 
 function closeMatch() {
   document.getElementById("match-popup").classList.add("hidden");
