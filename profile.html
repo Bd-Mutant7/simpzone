@@ -61,6 +61,9 @@
 </head>
 <body>
 
+  <!-- ✅ Load Navbar -->
+  <div data-include="nav.html"></div>
+
   <h2>Your Profile</h2>
 
   <button id="viewProfileBtn">View My Profile</button>
@@ -90,6 +93,30 @@
     <button class="message-btn" onclick="alert('Messaging Jane Doe...');">Message</button>
   </div>
 
+  <!-- ✅ Load Footer -->
+  <div data-include="footer.html"></div>
+
+  <!-- ✅ Include nav/footer -->
+  <script>
+    async function includeHTML() {
+      const includeElements = document.querySelectorAll('[data-include]');
+      for (const el of includeElements) {
+        const file = el.getAttribute('data-include');
+        try {
+          const res = await fetch(file);
+          if (!res.ok) throw new Error('Could not load ' + file);
+          const text = await res.text();
+          el.innerHTML = text;
+        } catch (e) {
+          el.innerHTML = "<p style='color:red;'>Failed to load: " + file + "</p>";
+        }
+      }
+    }
+
+    includeHTML();
+  </script>
+
+  <!-- ✅ Firebase logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -215,24 +242,5 @@
       }
     });
   </script>
-  <script>
-  async function includeHTML() {
-    const includeElements = document.querySelectorAll('[data-include]');
-    for (const el of includeElements) {
-      const file = el.getAttribute('data-include');
-      try {
-        const res = await fetch(file);
-        if (!res.ok) throw new Error('Could not load ' + file);
-        const text = await res.text();
-        el.innerHTML = text;
-      } catch (e) {
-        el.innerHTML = "<p style='color:red;'>Failed to load: " + file + "</p>";
-      }
-    }
-  }
-
-  includeHTML();
-</script>
-
 </body>
 </html>
