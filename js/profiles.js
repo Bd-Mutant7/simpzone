@@ -41,5 +41,15 @@ users.forEach(user => {
     </div>
   `;
 
+  // Add event listeners
+  card.querySelector(".like").addEventListener("click", () => {
+    alert(`You liked ${user.name}!`);
+    card.remove();
+  });
+
+  card.querySelector(".skip").addEventListener("click", () => {
+    card.remove();
+  });
+
   container.appendChild(card);
 });
