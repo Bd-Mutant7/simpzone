@@ -215,5 +215,24 @@
       }
     });
   </script>
+  <script>
+  async function includeHTML() {
+    const includeElements = document.querySelectorAll('[data-include]');
+    for (const el of includeElements) {
+      const file = el.getAttribute('data-include');
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error('Could not load ' + file);
+        const text = await res.text();
+        el.innerHTML = text;
+      } catch (e) {
+        el.innerHTML = "<p style='color:red;'>Failed to load: " + file + "</p>";
+      }
+    }
+  }
+
+  includeHTML();
+</script>
+
 </body>
 </html>
