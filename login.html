@@ -19,47 +19,6 @@ const firebaseConfig = {
   messagingSenderId: "112722316822",
   appId: "1:112722316822:web:40f25acde13d98821f2f37"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  // Login
-  document.querySelector("#login").addEventListener("click", () => {
-    const email = document.querySelector("#email").value;
-    const password = document.querySelector("#password").value;
-
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        localStorage.setItem("user", user.email); // Save login state
-        alert("Login successful!");
-        window.location.href = "index.html"; // Redirect after login
-      })
-      .catch((error) => {
-        alert("Login failed: " + error.message);
-      });
-  });
-
-  // Register
-  document.querySelector("#register").addEventListener("click", () => {
-    const email = document.querySelector("#email").value;
-    const password = document.querySelector("#password").value;
-
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        localStorage.setItem("user", user.email); // Save login state
-        alert("Registered and logged in!");
-        window.location.href = "index.html";
-      })
-      .catch((error) => {
-        alert("Registration failed: " + error.message);
-      });
-  });
-
   </script>
 </head>
 <body>
