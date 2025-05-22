@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Profile - SimpZone</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff0f5;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h2 {
+      color: #d63384;
+    }
+
+    form, .profile-view, .user-container {
+      background: white;
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #ff4da6;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .message {
+      margin-top: 10px;
+      color: green;
+    }
+
+    .user-container button.message-btn {
+      background-color: #6f42c1;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Your Profile</h2>
+
+  <button id="viewProfileBtn">View My Profile</button>
+
+  <div class="profile-view" id="profileDisplay" style="display:none;">
+    <p><strong>Name:</strong> <span id="displayName"></span></p>
+    <p><strong>Age:</strong> <span id="displayAge"></span></p>
+    <p><strong>Bio:</strong> <span id="displayBio"></span></p>
+    <img id="displayPic" src="" alt="Profile Picture" style="display:none;" />
+    <button id="editBtn">Edit Profile</button>
+  </div>
+
+  <form id="editProfileForm" style="display:none;">
+    <input type="text" id="name" placeholder="Your Name" required />
+    <input type="number" id="age" placeholder="Your Age" required />
+    <textarea id="bio" rows="4" placeholder="Write a short bio..." required></textarea>
+    <input type="file" id="profilePic" accept="image/*" />
+    <img id="preview" src="" alt="Profile Picture Preview" style="display:none;" />
+    <button type="submit">Save Profile</button>
+    <p class="message" id="message"></p>
+  </form>
+
+  <div class="user-container">
+    <h3>Example User</h3>
+    <p>Name: Jane Doe</p>
+    <p>Bio: Loves anime, coffee, and cats.</p>
+    <button class="message-btn" onclick="alert('Messaging Jane Doe...');">Message</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const viewProfileBtn = document.getElementById("viewProfileBtn");
+    const profileDisplay = document.getElementById("profileDisplay");
+    const editProfileForm = document.getElementById("editProfileForm");
+    const editBtn = document.getElementById("editBtn");
+    const message = document.getElementById("message");
+
+    const nameInput = document.getElementById("name");
+    const ageInput = document.getElementById("age");
+    const bioInput = document.getElementById("bio");
+    const profilePicInput = document.getElementById("profilePic");
+    const previewImg = document.getElementById("preview");
+
+    const displayName = document.getElementById("displayName");
+    const displayAge = document.getElementById("displayAge");
+    const displayBio = document.getElementById("displayBio");
+    const displayPic = document.getElementById("displayPic");
+
+    let currentUserUID = null;
+    let currentProfilePic = "";
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        currentUserUID = user.uid;
+      }
+    });
+
+    viewProfileBtn.addEventListener("click", async () => {
+      if (!currentUserUID) return;
+
+      const userRef = doc(db, "users", currentUserUID);
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        displayName.textContent = data.name || "";
+        displayAge.textContent = data.age || "";
+        displayBio.textContent = data.bio || "";
+
+        if (data.profilePic) {
+          displayPic.src = data.profilePic;
+          displayPic.style.display = "block";
+          currentProfilePic = data.profilePic;
+        }
+
+        profileDisplay.style.display = "block";
+        viewProfileBtn.style.display = "none";
+      } else {
+        alert("Profile not found.");
+      }
+    });
+
+    editBtn.addEventListener("click", () => {
+      nameInput.value = displayName.textContent;
+      ageInput.value = displayAge.textContent;
+      bioInput.value = displayBio.textContent;
+      previewImg.src = currentProfilePic || "";
+      previewImg.style.display = currentProfilePic ? "block" : "none";
+
+      profileDisplay.style.display = "none";
+      editProfileForm.style.display = "block";
+    });
+
+    profilePicInput.addEventListener("change", () => {
+      const file = profilePicInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          previewImg.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    editProfileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const age = ageInput.value.trim();
+      const bio = bioInput.value.trim();
+      let profilePicData = previewImg.src || "";
+
+      if (!name || !age || !bio) {
+        message.textContent = "All fields are required!";
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", currentUserUID);
+        await setDoc(userRef, {
+          name,
+          age,
+          bio,
+          profilePic: profilePicData,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        message.textContent = "Profile updated successfully!";
+        setTimeout(() => window.location.reload(), 1000);
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        message.textContent = "Failed to save profile.";
+      }
+    });
+  </script>
+</body>
+</html>
