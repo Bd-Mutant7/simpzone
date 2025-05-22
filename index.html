@@ -73,25 +73,43 @@
 
   <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
 
-  <script>
-    // Login check
-    const user = localStorage.getItem("user");
-    if (user) {
-      document.getElementById("welcomeMessage").textContent = "Welcome Spice 💘";
-    } else {
-      window.location.href = "login.html";
-    }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("welcomeMessage").textContent = `Welcome ${user.email} 💘`;
+      } else {
+        // Show homepage still, but give options to login/register
+        document.getElementById("welcomeMessage").textContent = "Welcome Guest 💘";
+        document.getElementById("mainContent").innerHTML += `
+          <p>Please <a href="login.html">Login</a> or <a href="register.html">Register</a> to interact</p>
+        `;
+      }
+    });
 
     function logout() {
-      localStorage.removeItem("user");
-      window.location.href = "login.html";
+      signOut(auth).then(() => {
+        localStorage.removeItem("user");
+        location.reload(); // Reload to update state
+      });
     }
 
     function match() {
-      // Play match sound
       document.getElementById("matchSound").play();
-
-      // Show animated hearts
       const hearts = document.createElement('div');
       hearts.innerHTML = "💖💞💘💗";
       hearts.classList.add('hearts');
