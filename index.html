@@ -9,36 +9,61 @@
       font-family: 'Segoe UI', sans-serif;
       background: #ffe6f0;
       margin: 0;
-      padding: 2rem;
-      text-align: center;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #ff4da6;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      margin-left: 1rem;
+      text-decoration: none;
+      font-weight: bold;
     }
 
     h2 {
+      text-align: center;
+      margin-top: 1rem;
       color: #d63384;
     }
 
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      background-color: #ff4da6;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
     }
 
     .profile-card {
       background: white;
       border-radius: 12px;
       padding: 20px;
-      max-width: 300px;
-      margin: 2rem auto;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
     .profile-pic {
       width: 100%;
+      max-height: 250px;
+      object-fit: cover;
       border-radius: 12px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      border: none;
+      background-color: #ff4da6;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
     .hearts {
@@ -59,16 +84,22 @@
 </head>
 <body>
 
-  <h2 id="welcomeMessage">Welcome!</h2>
-  <button onclick="logout()">Logout</button>
-
-  <div id="mainContent">
-    <div class="profile-card">
-      <img src="images/user1.jpg" alt="User" class="profile-pic">
-      <h3>Emily, 24</h3>
-      <p>Loves coffee, travel, and cats 😻</p>
-      <button onclick="match()">💘 Match</button>
+  <!-- Navbar -->
+  <nav>
+    <div>SimpZone 💘</div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="create-profile.html">Profile</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <a href="#" onclick="logout()">Logout</a>
     </div>
+  </nav>
+
+  <h2 id="welcomeMessage">Welcome!</h2>
+
+  <div class="profiles" id="profilesContainer">
+    <!-- User profiles will appear here -->
   </div>
 
   <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
@@ -76,6 +107,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -88,23 +120,37 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    onAuthStateChanged(auth, (user) => {
+    let currentUser = null;
+
+    // Check login state
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
       if (user) {
         document.getElementById("welcomeMessage").textContent = `Welcome ${user.email} 💘`;
       } else {
-        // Show homepage still, but give options to login/register
         document.getElementById("welcomeMessage").textContent = "Welcome Guest 💘";
-        document.getElementById("mainContent").innerHTML += `
-          <p>Please <a href="login.html">Login</a> or <a href="register.html">Register</a> to interact</p>
-        `;
       }
+      loadProfiles(); // Load profiles either way
     });
 
-    function logout() {
-      signOut(auth).then(() => {
-        localStorage.removeItem("user");
-        location.reload(); // Reload to update state
+    async function loadProfiles() {
+      const profilesContainer = document.getElementById("profilesContainer");
+      profilesContainer.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "users"));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "profile-card";
+        card.innerHTML = `
+          <img src="${data.photoURL || 'images/default.jpg'}" class="profile-pic" alt="${data.name}">
+          <h3>${data.name}, ${data.age}</h3>
+          <p>${data.bio}</p>
+          ${currentUser ? `<button onclick="match()">💘 Match</button>` : ""}
+        `;
+        profilesContainer.appendChild(card);
       });
     }
 
@@ -116,6 +162,12 @@
       document.body.appendChild(hearts);
       setTimeout(() => hearts.remove(), 1500);
     }
+
+    window.logout = function () {
+      signOut(auth).then(() => {
+        location.reload();
+      });
+    };
   </script>
 
 </body>
