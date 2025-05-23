@@ -1,165 +1,587 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SimpZone Chat</title>
   <style>
+    /* General & dark mode styles */
     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #ffe6f0;
-      color: #000;
+      padding: 0;
+      background: #ffe6f0;
+      color: #333;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark {
+      background: #121212;
+      color: #eee;
     }
 
-    .dark-mode {
-      background-color: #121212;
-      color: #fff;
-    }
-
+    /* Navbar */
     .navbar {
       background-color: #ff4da6;
+      padding: 0.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .navbar h1 {
+      margin: 0;
       color: white;
+      font-weight: 900;
+      font-size: 1.8rem;
+      user-select: none;
+      margin-bottom: 0.3rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+    .nav-links a:hover {
+      background-color: #d63384;
+    }
+    .toggle-darkmode {
+      cursor: pointer;
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      user-select: none;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .toggle-darkmode.light {
+      background-color: black;
+      color: white;
+    }
+    .toggle-darkmode.dark {
+      background-color: white;
+      color: black;
+    }
+
+    /* Layout */
+    main {
+      margin-top: 85px; /* space for navbar */
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Users list */
+    #usersList {
+      width: 25%;
+      border-right: 1px solid #ccc;
+      background: white;
+      overflow-y: auto;
       padding: 1rem;
+      transition: background 0.3s;
+    }
+    body.dark #usersList {
+      background: #222;
+      border-color: #444;
+    }
+    .user-item {
+      padding: 0.5rem;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+    .user-item:hover {
+      background-color: #ff4da6;
+      color: white;
+    }
+    body.dark .user-item:hover {
+      background-color: #d63384;
+    }
+    .user-item.active {
+      background-color: #ff4da6;
+      color: white;
+      font-weight: 700;
+    }
+    body.dark .user-item.active {
+      background-color: #d63384;
+    }
+
+    .unread-badge {
+      background: red;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 7px;
+      font-size: 12px;
+      user-select: none;
+      margin-left: 8px;
+    }
+
+    /* Chat area */
+    #chatContainer {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      background: white;
+      transition: background 0.3s;
+    }
+    body.dark #chatContainer {
+      background: #1e1e1e;
+    }
+
+    #chatHeader {
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      user-select: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .navbar h1 {
-      font-size: 24px;
-      margin: 0;
-    }
-
-    .chat-container {
+    #messages {
       flex: 1;
-      padding: 1rem;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fefefe;
+      transition: background 0.3s;
     }
-
+    body.dark #messages {
+      background: #222;
+      border-color: #444;
+    }
     .message {
-      padding: 0.5rem 1rem;
-      margin: 0.5rem 0;
-      border-radius: 12px;
-      max-width: 60%;
+      margin-bottom: 0.8rem;
+      word-wrap: break-word;
+      max-width: 80%;
+      padding: 0.5rem 0.8rem;
+      border-radius: 15px;
+      display: inline-block;
+      clear: both;
+      font-size: 0.95rem;
     }
-
-    .sent {
-      background-color: #ff99cc;
-      align-self: flex-end;
-    }
-
-    .received {
-      background-color: #f1f1f1;
-      align-self: flex-start;
-    }
-
-    .dark-mode .sent {
-      background-color: #d63384;
-    }
-
-    .dark-mode .received {
-      background-color: #333;
-    }
-
-    .message-input {
-      display: flex;
-      border-top: 1px solid #ccc;
-    }
-
-    .message-input input {
-      flex: 1;
-      padding: 1rem;
-      border: none;
-      font-size: 16px;
-    }
-
-    .message-input button {
-      padding: 1rem;
+    .message.sent {
       background-color: #ff4da6;
       color: white;
+      float: right;
+    }
+    body.dark .message.sent {
+      background-color: #d63384;
+    }
+    .message.received {
+      background-color: #eee;
+      color: #333;
+      float: left;
+    }
+    body.dark .message.received {
+      background-color: #444;
+      color: #ddd;
+    }
+
+    /* Typing indicator */
+    #typingIndicator {
+      font-style: italic;
+      font-size: 0.9rem;
+      height: 20px;
+      margin-bottom: 5px;
+      color: #666;
+      user-select: none;
+      min-height: 20px;
+    }
+    body.dark #typingIndicator {
+      color: #aaa;
+    }
+
+    /* Input area */
+    #inputArea {
+      display: flex;
+      gap: 0.5rem;
+    }
+    #messageInput {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 25px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #messageInput:focus {
+      border-color: #ff4da6;
+    }
+    body.dark #messageInput {
+      background-color: #333;
+      color: #eee;
+      border-color: #555;
+    }
+    #sendBtn {
+      background-color: #ff4da6;
       border: none;
+      border-radius: 25px;
+      padding: 0 16px;
       cursor: pointer;
-    }
-
-    .toggle-mode {
-      background-color: transparent;
-      border: 2px solid;
-      border-radius: 5px;
-      padding: 5px 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .dark-mode .toggle-mode {
+      font-size: 1.1rem;
       color: white;
-      border-color: white;
+      font-weight: 700;
+      transition: background-color 0.2s;
+      user-select: none;
+    }
+    #sendBtn:hover {
+      background-color: #d63384;
+    }
+    body.dark #sendBtn:hover {
+      background-color: #b0286f;
     }
 
-    .toggle-mode.light {
-      color: black;
-      border-color: black;
+    /* Responsive */
+    @media (max-width: 700px) {
+      main {
+        flex-direction: column;
+      }
+      #usersList {
+        width: 100%;
+        height: 150px;
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+      }
+      #chatContainer {
+        height: calc(100vh - 300px);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="navbar">
-    <h1>SimpZone 💘</h1>
-    <button class="toggle-mode light" id="toggleMode">Dark Mode</button>
-  </div>
-  <div class="chat-container" id="chatContainer">
-    <div class="message received">Hi there! 😊</div>
-    <div class="message sent">Hey! How are you?</div>
-  </div>
-  <div class="message-input">
-    <input type="text" id="messageInput" placeholder="Type your message...">
-    <button onclick="sendMessage()">Send</button>
-  </div>
+  <nav class="navbar">
+    <h1>SimpZone</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="matches.html">Matches</a>
+      <a href="messages.html">Messages</a>
+      <a href="login.html" id="logoutBtn">Logout</a>
+      <button id="darkModeToggle" class="toggle-darkmode light">Dark Mode</button>
+    </div>
+  </nav>
 
-  <script>
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const chat = document.getElementById("chatContainer");
-      if (input.value.trim() !== "") {
-        const message = document.createElement("div");
-        message.className = "message sent";
-        message.textContent = input.value;
-        chat.appendChild(message);
-        input.value = "";
-        chat.scrollTop = chat.scrollHeight;
-      }
+  <main>
+    <section id="usersList" aria-label="User list">
+      <!-- User list will be appended here -->
+      <p>Loading users...</p>
+    </section>
+
+    <section id="chatContainer" aria-label="Chat window">
+      <div id="chatHeader">Select a user to chat</div>
+      <div id="messages" aria-live="polite" aria-relevant="additions"></div>
+      <div id="typingIndicator"></div>
+      <form id="inputArea" autocomplete="off">
+        <input type="text" id="messageInput" placeholder="Type your message..." disabled />
+        <button type="submit" id="sendBtn" disabled>➤</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      onSnapshot,
+      addDoc,
+      serverTimestamp,
+      orderBy,
+      doc,
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let currentChatUser = null;
+    let unsubscribeMessages = null;
+    let typingTimeout;
+
+    const usersList = document.getElementById('usersList');
+    const messagesDiv = document.getElementById('messages');
+    const chatHeader = document.getElementById('chatHeader');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Notification permission request
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
     }
 
-    const toggleBtn = document.getElementById("toggleMode");
-    const body = document.body;
-
-    function setDarkModePreference(isDark) {
+    // Dark mode toggle with saved preference
+    function applyDarkMode(isDark) {
       if (isDark) {
-        body.classList.add("dark-mode");
-        toggleBtn.textContent = "Light Mode";
-        toggleBtn.classList.remove("light");
-        localStorage.setItem("mode", "dark");
+        document.body.classList.add('dark');
+        darkModeToggle.textContent = 'Light Mode';
+        darkModeToggle.classList.remove('light');
+        darkModeToggle.classList.add('dark');
       } else {
-        body.classList.remove("dark-mode");
-        toggleBtn.textContent = "Dark Mode";
-        toggleBtn.classList.add("light");
-        localStorage.setItem("mode", "light");
+        document.body.classList.remove('dark');
+        darkModeToggle.textContent = 'Dark Mode';
+        darkModeToggle.classList.remove('dark');
+        darkModeToggle.classList.add('light');
+      }
+      localStorage.setItem('darkMode', isDark);
+    }
+    darkModeToggle.onclick = () => {
+      applyDarkMode(!document.body.classList.contains('dark'));
+    };
+    applyDarkMode(localStorage.getItem('darkMode') === 'true');
+
+    logoutBtn.onclick = (e) => {
+      e.preventDefault();
+      signOut(auth).then(() => {
+        localStorage.removeItem("user");
+        window.location.href = 'login.html';
+      });
+    };
+
+    // Fetch users (excluding current)
+    async function loadUsers() {
+      const q = query(collection(db, "users"));
+      onSnapshot(q, (snapshot) => {
+        usersList.innerHTML = '';
+        snapshot.forEach(docSnap => {
+          const userData = docSnap.data();
+          const userId = docSnap.id;
+          if (userId === currentUser.uid) return; // Skip current user
+
+          const userDiv = document.createElement('div');
+          userDiv.className = 'user-item';
+          userDiv.textContent = userData.name || userData.email || 'User';
+          userDiv.dataset.userid = userId;
+
+          userDiv.onclick = () => selectChat({ id: userId, name: userData.name || 'User' });
+
+          usersList.appendChild(userDiv);
+        });
+        if (!usersList.hasChildNodes()) {
+          usersList.textContent = 'No other users found.';
+        }
+      });
+    }
+
+    // Manage unread badges
+    const unreadMessages = new Map();
+
+    function showNotification(title, body) {
+      if (Notification.permission === 'granted' && document.visibilityState !== 'visible') {
+        new Notification(title, {
+          body,
+          icon: 'https://simpzone-c261f.firebaseapp.com/favicon.ico' // change to your icon
+        });
       }
     }
 
-    toggleBtn.addEventListener("click", () => {
-      const isDark = !body.classList.contains("dark-mode");
-      setDarkModePreference(isDark);
+    function markUserAsUnread(userId) {
+      unreadMessages.set(userId, true);
+      const userItems = document.querySelectorAll('.user-item');
+      userItems.forEach(item => {
+        if (item.dataset.userid === userId && !item.querySelector('.unread-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'unread-badge';
+          badge.textContent = '●';
+          item.appendChild(badge);
+        }
+      });
+    }
+
+    function clearUnread(userId) {
+      unreadMessages.delete(userId);
+      const userItems = document.querySelectorAll('.user-item');
+      userItems.forEach(item => {
+        if (item.dataset.userid === userId) {
+          const badge = item.querySelector('.unread-badge');
+          if (badge) badge.remove();
+        }
+      });
+    }
+
+    // Load and show messages for selected chat
+    async function selectChat(user) {
+      currentChatUser = user;
+      clearUnread(user.id);
+
+      chatHeader.textContent = `Chat with ${user.name}`;
+
+      messageInput.disabled = false;
+      sendBtn.disabled = false;
+      messageInput.value = '';
+      messagesDiv.innerHTML = '';
+
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      // Chat ID = sorted UIDs concatenated
+      const chatId = [currentUser.uid, user.id].sort().join('_');
+
+      // Listen for messages
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+      unsubscribeMessages = onSnapshot(q, (snapshot) => {
+        messagesDiv.innerHTML = '';
+        snapshot.forEach(docSnap => {
+          const msg = docSnap.data();
+          const div = document.createElement('div');
+          div.className = 'message ' + (msg.senderId === currentUser.uid ? 'sent' : 'received');
+          div.textContent = msg.text;
+          messagesDiv.appendChild(div);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+
+      // Typing indicator listen
+      const typingRef = doc(db, 'chats', chatId, 'typing', user.id);
+      const unsubscribeTyping = onSnapshot(typingRef, (docSnap) => {
+        if (docSnap.exists() && docSnap.data().typing) {
+          typingIndicator.textContent = `${user.name} is typing...`;
+        } else {
+          typingIndicator.textContent = '';
+        }
+      });
+
+      // Clean typing on chat switch
+      if (window.currentTypingUnsubscribe) window.currentTypingUnsubscribe();
+      window.currentTypingUnsubscribe = unsubscribeTyping;
+    }
+
+    // Send message
+    document.getElementById('inputArea').onsubmit = async (e) => {
+      e.preventDefault();
+      if (!currentChatUser || !messageInput.value.trim()) return;
+
+      const chatId = [currentUser.uid, currentChatUser.id].sort().join('_');
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+
+      await addDoc(messagesRef, {
+        senderId: currentUser.uid,
+        senderName: currentUser.displayName || currentUser.email,
+        receiverId: currentChatUser.id,
+        text: messageInput.value,
+        timestamp: serverTimestamp()
+      });
+
+      messageInput.value = '';
+
+      // Set typing false after send
+      await setDoc(doc(db, 'chats', chatId, 'typing', currentUser.uid), { typing: false });
+    };
+
+    // Typing indicator update
+    messageInput.addEventListener('input', async () => {
+      if (!currentChatUser) return;
+      const chatId = [currentUser.uid, currentChatUser.id].sort().join('_');
+      const typingDocRef = doc(db, 'chats', chatId, 'typing', currentUser.uid);
+
+      await setDoc(typingDocRef, { typing: true });
+
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(async () => {
+        await setDoc(typingDocRef, { typing: false });
+      }, 1500);
     });
 
-    // Load saved mode
-    const savedMode = localStorage.getItem("mode");
-    setDarkModePreference(savedMode === "dark");
+    // Listen for new messages to show notifications and unread badge
+    function listenForNewMessages() {
+      const chatsRef = collection(db, 'chats');
+      // Since we don't know all chat IDs, listen on messages for current user
+      // Let's listen for all chats involving currentUser:
+      // This requires a composite collection query which Firestore doesn't support easily,
+      // so instead, we listen on all chats and filter locally (not efficient but demo)
+      // In production, consider storing userChats collection.
+
+      // For demo: Listen for any message sent to currentUser
+      // We'll listen on all chats with currentUser UID in chatId
+
+      const userChatsQuery = query(collection(db, 'chats'));
+
+      onSnapshot(userChatsQuery, (snap) => {
+        snap.docChanges().forEach(change => {
+          if (change.type === 'added' || change.type === 'modified') {
+            const chatId = change.doc.id;
+            if (chatId.includes(currentUser.uid)) {
+              const messagesRef = collection(db, 'chats', chatId, 'messages');
+              const messagesQuery = query(messagesRef, orderBy('timestamp', 'desc'),);
+              onSnapshot(messagesQuery, (msgSnap) => {
+                msgSnap.docChanges().forEach(changeMsg => {
+                  if (changeMsg.type === 'added') {
+                    const msg = changeMsg.doc.data();
+                    if (msg.senderId !== currentUser.uid) {
+                      // If not currently chatting with sender, mark unread + notify
+                      if (!currentChatUser || currentChatUser.id !== msg.senderId) {
+                        markUserAsUnread(msg.senderId);
+                        showNotification(`New message from ${msg.senderName}`, msg.text);
+                      }
+                    }
+                  }
+                });
+              });
+            }
+          }
+        });
+      });
+    }
+
+    // Auth listener & initialization
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        loadUsers();
+        listenForNewMessages();
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
   </script>
 </body>
 </html>
