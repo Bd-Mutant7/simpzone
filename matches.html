@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimpZone Matches</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffe6f0;
+      margin: 0;
+      padding-top: 80px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #d63384;
+      margin-top: 1rem;
+    }
+
+    .navbar {
+      background-color: #ff4da6;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 8px 16px;
+    }
+
+    .navbar a:hover {
+      background-color: #d63384;
+      border-radius: 4px;
+    }
+
+    .matches-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+
+    .match-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      width: 260px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .match-card img {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .match-card h3 {
+      margin: 0.5rem 0 0.25rem;
+      color: #ff4da6;
+    }
+
+    .match-card p {
+      margin: 0;
+      color: #555;
+    }
+
+    .match-card a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #ff4da6;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+
+    .match-card a:hover {
+      background-color: #d63384;
+    }
+
+    .footer {
+      background-color: #ff4da6;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+      color: white;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+    });
+
+    window.logout = () => {
+      localStorage.removeItem("user");
+      signOut(auth).then(() => window.location.href = "login.html");
+    };
+  </script>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <a href="index.html">Home</a>
+    <a href="matches.html">Matches</a>
+    <a href="messages.html">Messages</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <h2>Your Matches 💘</h2>
+
+  <div class="matches-container">
+    <!-- Match 1 -->
+    <div class="match-card">
+      <img src="images/user1.jpg" alt="Emily" />
+      <h3>Emily, 24</h3>
+      <p>Matched on May 20</p>
+      <a href="messages.html?uid=emily123">Message</a>
+    </div>
+
+    <!-- Match 2 -->
+    <div class="match-card">
+      <img src="images/user2.jpg" alt="Jason" />
+      <h3>Jason, 27</h3>
+      <p>Matched on May 22</p>
+      <a href="messages.html?uid=jason456">Message</a>
+    </div>
+
+    <!-- Add more cards as needed with real UID -->
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2025 SimpZone | All rights reserved</p>
+  </div>
+</body>
+</html>
