@@ -4,9 +4,130 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SimpZone Login</title>
+  <style>
+    :root {
+      --bg-color: #ffc0cb;
+      --card-color: #ffe4e1;
+      --text-color: #000;
+      --nav-footer-bg: #ff69b4;
+    }
+
+    body.dark {
+      --bg-color: #1a1a1a;
+      --card-color: #2a2a2a;
+      --text-color: #f1f1f1;
+      --nav-footer-bg: #333;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    nav {
+      background-color: var(--nav-footer-bg);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      flex-wrap: wrap;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-left img {
+      height: 30px;
+    }
+
+    .dark-toggle {
+      background-color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .login-card {
+      background-color: var(--card-color);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: #ff69b4;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff1493;
+    }
+
+    footer {
+      background-color: var(--nav-footer-bg);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .dark-toggle {
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -24,11 +145,54 @@
       const emailInput = document.getElementById("email");
       const passwordInput = document.getElementById("password");
       const messageEl = document.getElementById("message");
+      const toggleBtn = document.getElementById("darkToggle");
+
+      if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark");
+        toggleBtn.textContent = "Light Mode";
+      } else {
+        toggleBtn.textContent = "Dark Mode";
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        const isDark = document.body.classList.contains("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+        toggleBtn.textContent = isDark ? "Light Mode" : "Dark Mode";
+      });
+
+      function validateForm() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email || !password) {
+          messageEl.textContent = "Both fields are required.";
+          return false;
+        }
+
+        if (!emailRegex.test(email)) {
+          messageEl.textContent = "Please enter a valid email.";
+          return false;
+        }
+
+        if (password.length < 6) {
+          messageEl.textContent = "Password must be at least 6 characters.";
+          return false;
+        }
+
+        messageEl.textContent = "";
+        return true;
+      }
 
       document.getElementById("loginBtn").addEventListener("click", () => {
+        if (!validateForm()) return;
+
         signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
           .then((userCredential) => {
+            const username = emailInput.value.split("@")[0];
             localStorage.setItem("user", userCredential.user.email);
+            localStorage.setItem("name", username);
             window.location.href = "index.html";
           })
           .catch((error) => {
@@ -37,12 +201,34 @@
       });
 
       document.getElementById("registerBtn").addEventListener("click", () => {
+        if (!validateForm()) return;
+
         createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
           .then((userCredential) => {
+            const username = emailInput.value.split("@")[0];
             localStorage.setItem("user", userCredential.user.email);
+            localStorage.setItem("name", username);
             window.location.href = "index.html";
           })
           .catch((error) => {
+            messageEl.textContent = error.message;
+          });
+      });
+
+      document.getElementById("forgotPasswordBtn").addEventListener("click", () => {
+        const email = emailInput.value.trim();
+        if (!email) {
+          messageEl.textContent = "Please enter your email to reset password.";
+          return;
+        }
+
+        sendPasswordResetEmail(auth, email)
+          .then(() => {
+            messageEl.style.color = "green";
+            messageEl.textContent = "Password reset email sent!";
+          })
+          .catch((error) => {
+            messageEl.style.color = "red";
             messageEl.textContent = error.message;
           });
       });
@@ -50,17 +236,28 @@
   </script>
 </head>
 <body>
-  <h2>Welcome to SimpZone 💘</h2>
+  <nav>
+    <div class="nav-left">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Heart_coraz%C3%B3n.svg/1024px-Heart_coraz%C3%B3n.svg.png" alt="Logo" />
+      <span>SimpZone 💘</span>
+    </div>
+    <button class="dark-toggle" id="darkToggle">Dark Mode</button>
+  </nav>
 
-  <div><label>Enter Email:</label>
-    <input type="email" id="email" placeholder="Email" required /><br><br>
-    <label>Password:</label>
-    <input type="password" id="password" placeholder="Password" required />
-    <br><br>
-    <button id="loginBtn">Login</button>
-    <button id="registerBtn">Register</button>
+  <div class="container">
+    <div class="login-card">
+      <h2>Login or Register</h2>
+      <label for="email">Email:</label><br>
+      <input type="email" id="email" placeholder="Email" required /><br>
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" placeholder="Password" required /><br>
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn">Register</button>
+      <button id="forgotPasswordBtn" style="background-color: #aaa;">Forgot Password?</button>
+      <p id="message" style="color: red; margin-top: 1rem;"></p>
+    </div>
   </div>
 
-  <p id="message" style="color: red;"></p>
+  <footer>&copy; 2025 SimpZone. All rights reserved.</footer>
 </body>
 </html>
