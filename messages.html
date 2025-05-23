@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimpZone Messages</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff0f5;
+      margin: 0;
+      padding-top: 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .navbar {
+      background-color: #ff4da6;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 8px 16px;
+    }
+
+    .navbar a:hover {
+      background-color: #d63384;
+      border-radius: 4px;
+    }
+
+    #messages {
+      width: 90%;
+      max-width: 600px;
+      height: 400px;
+      overflow-y: scroll;
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .mine {
+      background-color: #ffb3d9;
+      align-self: flex-end;
+    }
+
+    .theirs {
+      background-color: #e6e6e6;
+    }
+
+    .input-area {
+      width: 90%;
+      max-width: 600px;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input, button {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    input {
+      flex-grow: 1;
+    }
+
+    button {
+      background-color: #ff4da6;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #d63384;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      color: gray;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        currentUser = user;
+        setupMessagesListener();
+      }
+    });
+
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      await addDoc(collection(db, "messages"), {
+        text,
+        sender: currentUser.email,
+        createdAt: serverTimestamp()
+      });
+
+      input.value = "";
+    }
+
+    function setupMessagesListener() {
+      const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+      const messagesDiv = document.getElementById("messages");
+
+      onSnapshot(q, (snapshot) => {
+        messagesDiv.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const msg = doc.data();
+          const div = document.createElement("div");
+          div.textContent = `${msg.sender}: ${msg.text}`;
+          div.className = "message " + (msg.sender === currentUser.email ? "mine" : "theirs");
+          messagesDiv.appendChild(div);
+        });
+
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+    }
+
+    window.logout = () => {
+      signOut(auth).then(() => window.location.href = "login.html");
+    };
+
+    window.sendMessage = sendMessage;
+  </script>
+</head>
+<body>
+
+  <div class="navbar">
+    <a href="index.html">Home</a>
+    <a href="matches.html">Matches</a>
+    <a href="messages.html">Messages</a>
+    <a href="login.html" onclick="logout()">Logout</a>
+  </div>
+
+  <h2>💬 SimpZone Messages</h2>
+
+  <div id="messages"></div>
+
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <div class="footer">&copy; 2025 SimpZone | All rights reserved</div>
+
+</body>
+</html>
