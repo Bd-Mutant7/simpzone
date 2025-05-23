@@ -9,102 +9,86 @@
       font-family: 'Segoe UI', sans-serif;
       background: #fff0f5;
       margin: 0;
-      padding-top: 4rem;
+      padding: 0;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      height: 100vh;
     }
-
-    .navbar {
-      background-color: #ff4da6;
+    .contacts {
+      width: 25%;
+      background: #ffccdf;
+      overflow-y: auto;
       padding: 1rem;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
+      border-right: 2px solid #ff4da6;
     }
-
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      padding: 8px 16px;
-    }
-
-    .navbar a:hover {
-      background-color: #d63384;
-      border-radius: 4px;
-    }
-
-    #messages {
-      width: 90%;
-      max-width: 600px;
-      height: 400px;
-      overflow-y: scroll;
+    .contact {
+      padding: 10px;
+      margin: 5px 0;
       background: white;
       border-radius: 8px;
+      cursor: pointer;
+    }
+    .contact:hover {
+      background: #ffe6f0;
+    }
+    .chat {
+      width: 75%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       padding: 1rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
     }
-
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 1rem;
+    }
     .message {
-      margin: 0.5rem 0;
-      padding: 0.5rem;
+      background: #ffe6f0;
+      padding: 10px;
+      margin: 5px 0;
       border-radius: 8px;
+      max-width: 60%;
     }
-
     .mine {
-      background-color: #ffb3d9;
       align-self: flex-end;
+      background: #ff4da6;
+      color: white;
     }
-
-    .theirs {
-      background-color: #e6e6e6;
+    .typing {
+      font-size: 0.9rem;
+      color: #999;
+      margin-bottom: 5px;
     }
-
     .input-area {
-      width: 90%;
-      max-width: 600px;
       display: flex;
       gap: 0.5rem;
     }
-
-    input, button {
+    input[type="text"], input[type="file"] {
+      flex: 1;
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
-
-    input {
-      flex-grow: 1;
-    }
-
     button {
-      background-color: #ff4da6;
-      color: white;
+      padding: 10px;
       border: none;
+      background: #ff4da6;
+      color: white;
+      border-radius: 8px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #d63384;
-    }
-
-    .footer {
-      margin-top: 2rem;
-      color: gray;
+    .status {
+      font-size: 0.75rem;
+      color: green;
     }
   </style>
 
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, setDoc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -118,76 +102,114 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     let currentUser = null;
+    let currentChatUserId = null;
+    let typingTimeout = null;
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
-      } else {
-        currentUser = user;
-        setupMessagesListener();
+        return;
       }
+      currentUser = user;
+      loadContacts();
     });
 
-    async function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (!text) return;
-
-      await addDoc(collection(db, "messages"), {
-        text,
-        sender: currentUser.email,
-        createdAt: serverTimestamp()
+    async function loadContacts() {
+      const usersSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const usersQuery = await getDocs(collection(db, "users"));
+      const contactsContainer = document.getElementById("contacts");
+      contactsContainer.innerHTML = "";
+      usersQuery.forEach(docu => {
+        if (docu.id !== currentUser.uid) {
+          const data = docu.data();
+          const div = document.createElement("div");
+          div.className = "contact";
+          div.innerHTML = `<strong>${data.name}</strong><br><span class="status">${data.online ? "Online" : "Offline"}</span>`;
+          div.onclick = () => openChat(docu.id, data.name);
+          contactsContainer.appendChild(div);
+        }
       });
-
-      input.value = "";
     }
 
-    function setupMessagesListener() {
-      const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-      const messagesDiv = document.getElementById("messages");
-
+    async function openChat(userId, name) {
+      currentChatUserId = userId;
+      document.getElementById("chatBox").innerHTML = "";
+      const chatRef = collection(db, "messages", currentUser.uid + "_" + userId, "chat");
+      const q = query(chatRef, orderBy("timestamp"));
       onSnapshot(q, (snapshot) => {
-        messagesDiv.innerHTML = "";
-        snapshot.forEach((doc) => {
+        const box = document.getElementById("chatBox");
+        box.innerHTML = "";
+        snapshot.forEach(doc => {
           const msg = doc.data();
           const div = document.createElement("div");
-          div.textContent = `${msg.sender}: ${msg.text}`;
-          div.className = "message " + (msg.sender === currentUser.email ? "mine" : "theirs");
-          messagesDiv.appendChild(div);
+          div.className = "message" + (msg.sender === currentUser.uid ? " mine" : "");
+          if (msg.imageUrl) {
+            div.innerHTML = `<img src="${msg.imageUrl}" width="200"/>`;
+          } else {
+            div.textContent = msg.text;
+          }
+          box.appendChild(div);
         });
-
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
       });
     }
 
-    window.logout = () => {
-      signOut(auth).then(() => window.location.href = "login.html");
+    window.sendMessage = async () => {
+      const textInput = document.getElementById("messageInput");
+      const fileInput = document.getElementById("fileInput");
+      const text = textInput.value.trim();
+      const file = fileInput.files[0];
+
+      if (!text && !file) return;
+
+      let imageUrl = null;
+      if (file) {
+        const imageRef = ref(storage, `messages/${Date.now()}_${file.name}`);
+        const snap = await uploadBytes(imageRef, file);
+        imageUrl = await getDownloadURL(snap.ref);
+      }
+
+      const msg = {
+        sender: currentUser.uid,
+        receiver: currentChatUserId,
+        text: text || null,
+        imageUrl: imageUrl || null,
+        timestamp: serverTimestamp(),
+        delivered: true
+      };
+
+      const msgPath = collection(db, "messages", currentUser.uid + "_" + currentChatUserId, "chat");
+      await addDoc(msgPath, msg);
+      textInput.value = "";
+      fileInput.value = "";
     };
 
-    window.sendMessage = sendMessage;
+    window.typing = () => {
+      if (typingTimeout) clearTimeout(typingTimeout);
+      document.getElementById("typing").textContent = "Typing...";
+      typingTimeout = setTimeout(() => {
+        document.getElementById("typing").textContent = "";
+      }, 2000);
+    };
   </script>
 </head>
 <body>
 
-  <div class="navbar">
-    <a href="index.html">Home</a>
-    <a href="matches.html">Matches</a>
-    <a href="messages.html">Messages</a>
-    <a href="login.html" onclick="logout()">Logout</a>
+  <div class="contacts" id="contacts">
+    <p>Loading contacts...</p>
   </div>
 
-  <h2>💬 SimpZone Messages</h2>
-
-  <div id="messages"></div>
-
-  <div class="input-area">
-    <input type="text" id="messageInput" placeholder="Type your message..." />
-    <button onclick="sendMessage()">Send</button>
+  <div class="chat">
+    <div class="chat-box" id="chatBox"></div>
+    <div class="typing" id="typing"></div>
+    <div class="input-area">
+      <input type="text" id="messageInput" placeholder="Type your message..." oninput="typing()" />
+      <input type="file" id="fileInput" accept="image/*" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
-
-  <div class="footer">&copy; 2025 SimpZone | All rights reserved</div>
 
 </body>
 </html>
