@@ -1,41 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SimpZone Chat</title>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background-color: #ffe6f0;
+      color: #000;
       display: flex;
       flex-direction: column;
       height: 100vh;
+    }
+
+    .dark-mode {
+      background-color: #121212;
+      color: #fff;
     }
 
     .navbar {
       background-color: #ff4da6;
       color: white;
       padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
       font-size: 24px;
-      font-weight: bold;
-      text-align: center;
+      margin: 0;
     }
 
     .chat-container {
       flex: 1;
-      display: flex;
-      flex-direction: column;
       padding: 1rem;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .message {
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 70%;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 12px;
+      max-width: 60%;
     }
 
     .sent {
@@ -48,111 +59,107 @@
       align-self: flex-start;
     }
 
-    .input-container {
+    .dark-mode .sent {
+      background-color: #d63384;
+    }
+
+    .dark-mode .received {
+      background-color: #333;
+    }
+
+    .message-input {
       display: flex;
-      padding: 1rem;
       border-top: 1px solid #ccc;
-      background-color: white;
     }
 
-    input[type="text"] {
+    .message-input input {
       flex: 1;
-      padding: 10px;
+      padding: 1rem;
+      border: none;
       font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
     }
 
-    button {
-      padding: 10px;
-      margin-left: 10px;
+    .message-input button {
+      padding: 1rem;
       background-color: #ff4da6;
       color: white;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
     }
+
+    .toggle-mode {
+      background-color: transparent;
+      border: 2px solid;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dark-mode .toggle-mode {
+      color: white;
+      border-color: white;
+    }
+
+    .toggle-mode.light {
+      color: black;
+      border-color: black;
+    }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
-      authDomain: "simpzone-c261f.firebaseapp.com",
-      projectId: "simpzone-c261f",
-      storageBucket: "simpzone-c261f.appspot.com",
-      messagingSenderId: "112722316822",
-      appId: "1:112722316822:web:40f25acde13d98821f2f37"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const chatContainer = document.querySelector('.chat-container');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-
-    let currentUser;
-    let chatPartnerId;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        const urlParams = new URLSearchParams(window.location.search);
-        chatPartnerId = urlParams.get('uid');
-        if (!chatPartnerId) return alert("Missing chat partner UID");
-        loadMessages();
-      } else {
-        window.location.href = 'login.html';
-      }
-    });
-
-    function getChatRoomId(uid1, uid2) {
-      return [uid1, uid2].sort().join('_');
-    }
-
-    function loadMessages() {
-      const roomId = getChatRoomId(currentUser.uid, chatPartnerId);
-      const messagesRef = collection(db, 'chats', roomId, 'messages');
-      const q = query(messagesRef, orderBy('timestamp'));
-
-      onSnapshot(q, (snapshot) => {
-        chatContainer.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const div = document.createElement('div');
-          div.textContent = data.text;
-          div.className = 'message ' + (data.sender === currentUser.uid ? 'sent' : 'received');
-          chatContainer.appendChild(div);
-        });
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      });
-    }
-
-    sendBtn.addEventListener('click', async () => {
-      const text = messageInput.value.trim();
-      if (!text) return;
-      const roomId = getChatRoomId(currentUser.uid, chatPartnerId);
-      const messagesRef = collection(db, 'chats', roomId, 'messages');
-
-      await addDoc(messagesRef, {
-        text,
-        sender: currentUser.uid,
-        timestamp: serverTimestamp(),
-      });
-      messageInput.value = '';
-    });
-  </script>
 </head>
 <body>
-  <div class="navbar">SimpZone Chat</div>
-  <div class="chat-container"></div>
-  <div class="input-container">
-    <input type="text" id="messageInput" placeholder="Type a message..." />
-    <button id="sendBtn">Send</button>
+  <div class="navbar">
+    <h1>SimpZone 💘</h1>
+    <button class="toggle-mode light" id="toggleMode">Dark Mode</button>
   </div>
+  <div class="chat-container" id="chatContainer">
+    <div class="message received">Hi there! 😊</div>
+    <div class="message sent">Hey! How are you?</div>
+  </div>
+  <div class="message-input">
+    <input type="text" id="messageInput" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const chat = document.getElementById("chatContainer");
+      if (input.value.trim() !== "") {
+        const message = document.createElement("div");
+        message.className = "message sent";
+        message.textContent = input.value;
+        chat.appendChild(message);
+        input.value = "";
+        chat.scrollTop = chat.scrollHeight;
+      }
+    }
+
+    const toggleBtn = document.getElementById("toggleMode");
+    const body = document.body;
+
+    function setDarkModePreference(isDark) {
+      if (isDark) {
+        body.classList.add("dark-mode");
+        toggleBtn.textContent = "Light Mode";
+        toggleBtn.classList.remove("light");
+        localStorage.setItem("mode", "dark");
+      } else {
+        body.classList.remove("dark-mode");
+        toggleBtn.textContent = "Dark Mode";
+        toggleBtn.classList.add("light");
+        localStorage.setItem("mode", "light");
+      }
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      const isDark = !body.classList.contains("dark-mode");
+      setDarkModePreference(isDark);
+    });
+
+    // Load saved mode
+    const savedMode = localStorage.getItem("mode");
+    setDarkModePreference(savedMode === "dark");
+  </script>
 </body>
 </html>
