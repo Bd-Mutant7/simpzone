@@ -10,12 +10,22 @@
       background: #ffe6f0;
       margin: 0;
       padding: 2rem;
-      padding-top: 70px; /* Add top padding to account for the fixed navbar */
+      padding-top: 90px; /* Add top padding to account for the fixed navbar */
       text-align: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background: #1e1e1e;
+      color: white;
     }
 
     h2 {
       color: #d63384;
+    }
+
+    .dark-mode h2 {
+      color: #ffb6c1;
     }
 
     button {
@@ -35,6 +45,10 @@
       max-width: 300px;
       margin: 2rem auto;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .dark-mode .profile-card {
+      background: #333;
     }
 
     .profile-pic {
@@ -57,7 +71,6 @@
       100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
     }
 
-    /* Navbar Styling */
     .navbar {
       background-color: #ff4da6;
       padding: 1rem;
@@ -69,6 +82,19 @@
       justify-content: space-between;
       align-items: center;
       z-index: 1000;
+    }
+
+    .navbar h1 {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: white;
+      margin: 0;
+      font-family: 'Segoe UI', cursive;
+    }
+
+    .navbar .nav-links {
+      display: flex;
+      gap: 10px;
     }
 
     .navbar a {
@@ -83,7 +109,19 @@
       border-radius: 4px;
     }
 
-    /* Footer Styling */
+    .dark-toggle {
+      background: black;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .dark-mode .dark-toggle {
+      background: white;
+      color: black;
+    }
+
     .footer {
       background-color: #ff4da6;
       padding: 1rem;
@@ -92,11 +130,12 @@
     }
 
     #mainContent {
-      padding-top: 20px; /* Additional space to make sure it's not too tight */
+      padding-top: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
     }
   </style>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -115,7 +154,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Check auth state and update welcome message
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -138,7 +176,6 @@
       }
     });
 
-    // Global functions
     window.logout = () => {
       localStorage.removeItem("user");
       signOut(auth).then(() => window.location.href = "login.html");
@@ -156,30 +193,46 @@
       document.body.appendChild(hearts);
       setTimeout(() => hearts.remove(), 1500);
     };
+
+    window.toggleDarkMode = () => {
+      const isDark = document.body.classList.toggle("dark-mode");
+      localStorage.setItem("darkMode", isDark);
+      document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const isDark = localStorage.getItem("darkMode") === "true";
+      if (isDark) {
+        document.body.classList.add("dark-mode");
+      }
+      document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
+    });
   </script>
 </head>
 <body>
 
-  <!-- Navbar -->
   <div class="navbar">
-    <a href="index.html">Home</a>
-    <a href="matches.html">Matches</a>
-    <a href="messages.html">Messages</a>
-    <a href="login.html" onclick="logout()">Logout</a>
+    <h1>SimpZone</h1>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="matches.html">Matches</a>
+      <a href="messages.html">Messages</a>
+      <a href="#" onclick="logout()">Logout</a>
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
+    </div>
   </div>
 
   <h2 id="welcomeMessage">Loading...</h2>
   <button onclick="logout()">Logout</button>
-  <button><a href="profile.html"></a>My Profile</button>
   <button onclick="goToProfile()">View/Edit My Profile</button>
-  
-  <!-- Main Content Section -->
+
   <div id="mainContent">
     <div class="profile-card">
       <img src="images/user1.jpg" alt="User" class="profile-pic">
       <h3>Emily, 24</h3>
       <p>Loves coffee, travel, and cats 😻</p>
       <button onclick="match()">💘 Match</button>
+      <button onclick="window.location.href='messages.html?to=Emily'">💬 Message</button>
     </div>
 
     <div class="profile-card">
@@ -187,12 +240,12 @@
       <h3>Jason, 27</h3>
       <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
       <button onclick="match()">💘 Match</button>
+      <button onclick="window.location.href='messages.html?to=Jason'">💬 Message</button>
     </div>
   </div>
 
   <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
 
-  <!-- Footer -->
   <div class="footer">
     <p>&copy; 2025 SimpZone | All rights reserved</p>
   </div>
