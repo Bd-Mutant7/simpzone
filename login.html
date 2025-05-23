@@ -41,22 +41,28 @@
     }
 
     .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .nav-left img {
-      height: 30px;
+      font-size: 2rem;
+      font-weight: bold;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
     }
 
     .dark-toggle {
-      background-color: white;
       border: none;
       padding: 0.4rem 0.8rem;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+    }
+
+    body:not(.dark) .dark-toggle {
+      background-color: black;
+      color: white;
+    }
+
+    body.dark .dark-toggle {
+      background-color: white;
+      color: black;
     }
 
     .container {
@@ -237,10 +243,7 @@
 </head>
 <body>
   <nav>
-    <div class="nav-left">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Heart_coraz%C3%B3n.svg/1024px-Heart_coraz%C3%B3n.svg.png" alt="Logo" />
-      <span>SimpZone 💘</span>
-    </div>
+    <div class="nav-left">SimpZone 💘</div>
     <button class="dark-toggle" id="darkToggle">Dark Mode</button>
   </nav>
 
