@@ -53,6 +53,7 @@
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+      user-select: none;
     }
 
     body:not(.dark) .dark-toggle {
@@ -91,20 +92,33 @@
       margin: 0.5rem 0;
       border: 1px solid #ccc;
       border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
     }
 
     button {
-      margin: 0.5rem;
+      margin: 0.5rem 0.25rem 0 0.25rem;
       padding: 0.5rem 1rem;
       border: none;
       background-color: #ff69b4;
       color: white;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
     }
 
     button:hover {
       background-color: #ff1493;
+    }
+
+    #forgotPasswordBtn {
+      background-color: #aaa !important;
+      color: #222 !important;
+    }
+
+    #forgotPasswordBtn:hover {
+      background-color: #888 !important;
     }
 
     footer {
@@ -112,6 +126,8 @@
       color: white;
       text-align: center;
       padding: 1rem;
+      font-size: 0.9rem;
+      user-select: none;
     }
 
     @media (max-width: 500px) {
@@ -122,6 +138,7 @@
 
       .dark-toggle {
         margin-top: 0.5rem;
+        align-self: flex-end;
       }
     }
   </style>
@@ -153,6 +170,7 @@
       const messageEl = document.getElementById("message");
       const toggleBtn = document.getElementById("darkToggle");
 
+      // Set theme on load
       if (localStorage.getItem("theme") === "dark") {
         document.body.classList.add("dark");
         toggleBtn.textContent = "Light Mode";
@@ -171,6 +189,8 @@
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        messageEl.style.color = "red";
 
         if (!email || !password) {
           messageEl.textContent = "Both fields are required.";
@@ -191,6 +211,7 @@
         return true;
       }
 
+      // Login handler
       document.getElementById("loginBtn").addEventListener("click", () => {
         if (!validateForm()) return;
 
@@ -206,6 +227,7 @@
           });
       });
 
+      // Register handler
       document.getElementById("registerBtn").addEventListener("click", () => {
         if (!validateForm()) return;
 
@@ -221,9 +243,11 @@
           });
       });
 
+      // Forgot Password handler
       document.getElementById("forgotPasswordBtn").addEventListener("click", () => {
         const email = emailInput.value.trim();
         if (!email) {
+          messageEl.style.color = "red";
           messageEl.textContent = "Please enter your email to reset password.";
           return;
         }
@@ -244,20 +268,20 @@
 <body>
   <nav>
     <div class="nav-left">SimpZone 💘</div>
-    <button class="dark-toggle" id="darkToggle">Dark Mode</button>
+    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">Dark Mode</button>
   </nav>
 
   <div class="container">
-    <div class="login-card">
+    <div class="login-card" role="main" aria-label="Login and registration form">
       <h2>Login or Register</h2>
       <label for="email">Email:</label><br>
-      <input type="email" id="email" placeholder="Email" required /><br>
+      <input type="email" id="email" placeholder="Email" required autocomplete="email" /><br>
       <label for="password">Password:</label><br>
-      <input type="password" id="password" placeholder="Password" required /><br>
-      <button id="loginBtn">Login</button>
-      <button id="registerBtn">Register</button>
-      <button id="forgotPasswordBtn" style="background-color: #aaa;">Forgot Password?</button>
-      <p id="message" style="color: red; margin-top: 1rem;"></p>
+      <input type="password" id="password" placeholder="Password" required autocomplete="current-password" /><br>
+      <button id="loginBtn" type="button">Login</button>
+      <button id="registerBtn" type="button">Register</button>
+      <button id="forgotPasswordBtn" type="button" style="background-color: #aaa;">Forgot Password?</button>
+      <p id="message" aria-live="polite" style="color: red; margin-top: 1rem;"></p>
     </div>
   </div>
 
