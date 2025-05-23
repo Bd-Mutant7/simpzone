@@ -2,597 +2,256 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SimpZone Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimpZone - Messages</title>
+  <link rel="stylesheet" href="styles.css" />
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0; padding: 0;
-      background: #ffe6f0;
-      color: #333;
-      display: flex; flex-direction: column;
-      height: 100vh;
-      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
     }
+
+    :root {
+      --bg-color: #ffe6f0;
+      --text-color: #000;
+      --card-bg: #fff;
+    }
+
     body.dark {
-      background: #121212;
-      color: #eee;
+      --bg-color: #121212;
+      --text-color: #fff;
+      --card-bg: #1f1f1f;
     }
-    /* Navbar */
+
     .navbar {
       background-color: #ff4da6;
-      padding: 0.5rem 1rem;
+      padding: 1rem;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: fixed;
-      top: 0; width: 100%;
-      z-index: 1000;
-    }
-    .navbar h1 {
-      margin: 0 0 0.3rem 0;
-      color: white;
-      font-weight: 900;
-      font-size: 1.8rem;
-      user-select: none;
-    }
-    .nav-links {
-      display: flex;
-      gap: 1rem;
-      width: 100%;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
     }
-    .nav-links a {
+
+    .navbar h1 {
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    .navbar a {
       color: white;
       text-decoration: none;
-      font-weight: 600;
-      padding: 0.3rem 0.8rem;
+      padding: 0.5rem 1rem;
       border-radius: 5px;
-      transition: background-color 0.2s;
     }
-    .nav-links a:hover {
+
+    .navbar a:hover {
       background-color: #d63384;
     }
-    .toggle-darkmode {
+
+    .toggle-mode {
+      background-color: transparent;
+      border: 2px solid var(--text-color);
+      border-radius: 5px;
+      color: var(--text-color);
       cursor: pointer;
-      padding: 0.3rem 0.8rem;
-      border-radius: 5px;
-      user-select: none;
-      border: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-      transition: background-color 0.2s, color 0.2s;
+      padding: 5px 10px;
     }
-    .toggle-darkmode.light {
-      background-color: black;
-      color: white;
-    }
-    .toggle-darkmode.dark {
-      background-color: white;
-      color: black;
-    }
-    /* Layout */
-    main {
-      margin-top: 85px;
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-    #usersList {
-      width: 25%;
-      border-right: 1px solid #ccc;
-      background: white;
-      overflow-y: auto;
+
+    .chat-container {
+      max-width: 800px;
+      margin: 2rem auto;
       padding: 1rem;
-      transition: background 0.3s;
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    body.dark #usersList {
-      background: #222;
-      border-color: #444;
-    }
-    .user-item {
-      padding: 0.5rem;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-bottom: 0.5rem;
+
+    .user-list {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
-      transition: background-color 0.2s;
-    }
-    .user-item:hover {
-      background-color: #ff4da6;
-      color: white;
-    }
-    body.dark .user-item:hover {
-      background-color: #d63384;
-    }
-    .user-item.active {
-      background-color: #ff4da6;
-      color: white;
-      font-weight: 700;
-    }
-    body.dark .user-item.active {
-      background-color: #d63384;
-    }
-    .unread-badge {
-      background: red;
-      color: white;
-      border-radius: 50%;
-      padding: 2px 7px;
-      font-size: 12px;
-      user-select: none;
-      margin-left: 8px;
-    }
-    #chatContainer {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-      background: white;
-      transition: background 0.3s;
-    }
-    body.dark #chatContainer {
-      background: #1e1e1e;
-    }
-    #chatHeader {
-      font-weight: 700;
-      font-size: 1.2rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
       margin-bottom: 1rem;
-      user-select: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
-    #messages {
-      flex: 1;
+
+    .user {
+      background-color: #ffb3d9;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .chat-box {
+      height: 300px;
       overflow-y: auto;
       border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 0.5rem;
-      background: #fefefe;
-      transition: background 0.3s;
-      font-size: 1rem;
-      line-height: 1.4;
-      word-wrap: break-word;
+      padding: 10px;
+      margin-bottom: 10px;
     }
-    body.dark #messages {
-      background: #222;
-      border-color: #444;
-    }
+
     .message {
-      margin-bottom: 0.8rem;
-      max-width: 80%;
-      padding: 0.5rem 0.8rem;
-      border-radius: 15px;
-      display: inline-block;
-      clear: both;
-    }
-    .message.sent {
-      background-color: #ff4da6;
-      color: white;
-      float: right;
-      text-align: right;
-      word-break: break-word;
-    }
-    body.dark .message.sent {
-      background-color: #d63384;
-    }
-    .message.received {
-      background-color: #eee;
-      color: #333;
-      float: left;
-      word-break: break-word;
-    }
-    body.dark .message.received {
-      background-color: #444;
-      color: #ddd;
-    }
-    #typingIndicator {
-      font-style: italic;
-      font-size: 0.9rem;
-      height: 20px;
       margin-bottom: 5px;
-      color: #666;
-      user-select: none;
-      min-height: 20px;
     }
-    body.dark #typingIndicator {
-      color: #aaa;
-    }
-    #inputArea {
+
+    .message-input {
+      width: 100%;
       display: flex;
       gap: 0.5rem;
-      align-items: center;
     }
-    #messageInput {
+
+    .message-input input {
       flex: 1;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border-radius: 25px;
+      padding: 8px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      outline: none;
-      transition: border-color 0.2s;
     }
-    #messageInput:focus {
-      border-color: #ff4da6;
-    }
-    body.dark #messageInput {
-      background-color: #333;
-      color: #eee;
-      border-color: #555;
-    }
-    #sendBtn {
+
+    .message-input button {
+      padding: 8px 12px;
+      border: none;
       background-color: #ff4da6;
-      border: none;
-      border-radius: 25px;
-      padding: 0 16px;
-      cursor: pointer;
-      font-size: 1.1rem;
       color: white;
-      font-weight: 700;
-      transition: background-color 0.2s;
-      user-select: none;
-    }
-    #sendBtn:hover {
-      background-color: #d63384;
-    }
-    body.dark #sendBtn:hover {
-      background-color: #b0286f;
-    }
-    /* Emoji picker */
-    #emojiPicker {
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 1.4rem;
-      padding: 0 0.5rem;
-      user-select: none;
-      background: transparent;
-      border: none;
-      outline: none;
     }
-    /* Responsive */
-    @media (max-width: 700px) {
-      main {
-        flex-direction: column;
-      }
-      #usersList {
-        width: 100%;
-        height: 150px;
-        border-right: none;
-        border-bottom: 1px solid #ccc;
-      }
-      #chatContainer {
-        height: calc(100vh - 300px);
-      }
+
+    .typing-indicator {
+      font-style: italic;
+      font-size: 0.9rem;
+      color: gray;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <h1>SimpZone</h1>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="matches.html">Matches</a>
-      <a href="messages.html">Messages</a>
-      <a href="login.html" id="logoutBtn">Logout</a>
-      <button id="darkModeToggle" class="toggle-darkmode light">Dark Mode</button>
+  <div class="navbar">
+    <h1>SimpZone 💘</h1>
+    <a href="index.html">Home</a>
+    <a href="matches.html">Matches</a>
+    <a href="messages.html">Messages</a>
+    <a href="#" onclick="logout()">Logout</a>
+    <button class="toggle-mode" onclick="toggleDarkMode()">Light Mode</button>
+  </div>
+
+  <div class="chat-container">
+    <div class="user-list" id="userList">
+      <!-- Users will be listed here -->
     </div>
-  </nav>
 
-  <main>
-    <section id="usersList" aria-label="User list">
-      <p>Loading users...</p>
-    </section>
+    <div class="typing-indicator" id="typingIndicator" style="display:none;">Someone is typing...</div>
 
-    <section id="chatContainer" aria-label="Chat window">
-      <div id="chatHeader">Select a user to chat</div>
-      <div id="messages" aria-live="polite" aria-relevant="additions"></div>
-      <div id="typingIndicator"></div>
-      <form id="inputArea" autocomplete="off">
-        <button type="button" id="emojiPicker" title="Insert emoji">😊</button>
-        <input type="text" id="messageInput" placeholder="Type your message..." disabled />
-        <button type="submit" id="sendBtn" disabled>➤</button>
-      </form>
-    </section>
-  </main>
+    <div class="chat-box" id="chatBox"></div>
+    <div class="message-input">
+      <input type="text" id="messageInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      query,
-      onSnapshot,
-      addDoc,
-      serverTimestamp,
-      orderBy,
-      doc,
-      setDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Your Firebase config here
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // DOM Elements
-    const usersList = document.getElementById('usersList');
-    const chatHeader = document.getElementById('chatHeader');
-    const messagesDiv = document.getElementById('messages');
-    const inputArea = document.getElementById('inputArea');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const typingIndicator = document.getElementById('typingIndicator');
-    const emojiPickerBtn = document.getElementById('emojiPicker');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-
     let currentUser = null;
-    let currentChatUser = null;
-    let typingTimeout = null;
-    let currentTypingUnsubscribe = null;
-    let unreadCounts = {}; // {userId: count}
+    let selectedUserId = null;
 
-    // Dark mode toggle with persistence
-    function applyDarkMode(isDark) {
-      if (isDark) {
-        document.body.classList.add('dark');
-        darkModeToggle.textContent = 'Light Mode';
-        darkModeToggle.classList.remove('light');
-        darkModeToggle.classList.add('dark');
-      } else {
-        document.body.classList.remove('dark');
-        darkModeToggle.textContent = 'Dark Mode';
-        darkModeToggle.classList.remove('dark');
-        darkModeToggle.classList.add('light');
-      }
-      localStorage.setItem('darkMode', isDark ? 'true' : 'false');
-    }
-    // Initialize dark mode
-    applyDarkMode(localStorage.getItem('darkMode') === 'true');
-    darkModeToggle.addEventListener('click', () => {
-      applyDarkMode(!document.body.classList.contains('dark'));
-    });
-
-    // Logout
-    logoutBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      await signOut(auth);
-      window.location.href = 'login.html';
-    });
-
-    // Show notification (request permission if needed)
-    function showNotification(title, body) {
-      if (!("Notification" in window)) return;
-      if (Notification.permission === "granted") {
-        new Notification(title, { body });
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            new Notification(title, { body });
-          }
-        });
-      }
-    }
-
-    // Load all users except current user
-    function loadUsers() {
-      const q = query(collection(db, "users"));
-      onSnapshot(q, (snapshot) => {
-        usersList.innerHTML = '';
-        snapshot.docs.forEach(docSnap => {
-          const userData = docSnap.data();
-          if (docSnap.id === currentUser.uid) return; // skip current user
-          const userId = docSnap.id;
-
-          const userItem = document.createElement('div');
-          userItem.classList.add('user-item');
-          userItem.textContent = userData.name || userData.email || "Unnamed";
-          userItem.dataset.userid = userId;
-
-          // Unread badge
-          const unread = unreadCounts[userId] || 0;
-          if (unread > 0) {
-            const badge = document.createElement('span');
-            badge.classList.add('unread-badge');
-            badge.textContent = unread;
-            userItem.appendChild(badge);
-          }
-
-          // Click handler to open chat
-          userItem.onclick = () => openChatWithUser(userId, userData.name || userData.email);
-
-          usersList.appendChild(userItem);
-        });
-      });
-    }
-
-    // Open chat with user
-    function openChatWithUser(userId, userName) {
-      currentChatUser = { id: userId, name: userName };
-      chatHeader.textContent = `Chat with ${userName}`;
-      messageInput.disabled = false;
-      sendBtn.disabled = false;
-      messageInput.focus();
-
-      // Clear unread for this user
-      unreadCounts[userId] = 0;
-      updateUsersListUnreadUI();
-
-      loadMessagesForChat(currentUser.uid, userId);
-    }
-
-    // Update unread badges UI
-    function updateUsersListUnreadUI() {
-      const userItems = usersList.querySelectorAll('.user-item');
-      userItems.forEach(item => {
-        const userId = item.dataset.userid;
-        const badge = item.querySelector('.unread-badge');
-        const count = unreadCounts[userId] || 0;
-        if (count > 0) {
-          if (!badge) {
-            const newBadge = document.createElement('span');
-            newBadge.classList.add('unread-badge');
-            newBadge.textContent = count;
-            item.appendChild(newBadge);
-          } else {
-            badge.textContent = count;
-          }
-        } else {
-          if (badge) badge.remove();
-        }
-      });
-    }
-
-    // Load messages for chat between two users
-    let unsubscribeMessages = null;
-    let unsubscribeTyping = null;
-
-    function loadMessagesForChat(uid1, uid2) {
-      // Unsubscribe previous listeners
-      if (unsubscribeMessages) unsubscribeMessages();
-      if (unsubscribeTyping) unsubscribeTyping();
-
-      messagesDiv.innerHTML = '';
-      typingIndicator.textContent = '';
-
-      const chatId = [uid1, uid2].sort().join('_');
-      const messagesRef = collection(db, 'chats', chatId, 'messages');
-      const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
-
-      unsubscribeMessages = onSnapshot(messagesQuery, (querySnapshot) => {
-        messagesDiv.innerHTML = '';
-        querySnapshot.forEach(docSnap => {
-          const msg = docSnap.data();
-          const div = document.createElement('div');
-          div.classList.add('message');
-          div.classList.add(msg.senderId === currentUser.uid ? 'sent' : 'received');
-          div.textContent = msg.text;
-          messagesDiv.appendChild(div);
-        });
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      });
-
-      // Typing indicator
-      const typingDocRef = doc(db, 'chats', chatId, 'typing', uid2);
-      unsubscribeTyping = onSnapshot(typingDocRef, (docSnap) => {
-        if (docSnap.exists() && docSnap.data().typing) {
-          typingIndicator.textContent = `${currentChatUser.name} is typing...`;
-        } else {
-          typingIndicator.textContent = '';
-        }
-      });
-    }
-
-    // Send message
-    inputArea.addEventListener('submit', async e => {
-      e.preventDefault();
-      if (!currentChatUser || !messageInput.value.trim()) return;
-
-      const chatId = [currentUser.uid, currentChatUser.id].sort().join('_');
-      const messagesRef = collection(db, 'chats', chatId, 'messages');
-      await addDoc(messagesRef, {
-        senderId: currentUser.uid,
-        senderName: currentUser.displayName || currentUser.email,
-        receiverId: currentChatUser.id,
-        text: messageInput.value,
-        timestamp: serverTimestamp()
-      });
-      messageInput.value = '';
-
-      // Clear typing indicator for self
-      const typingRef = doc(db, 'chats', chatId, 'typing', currentUser.uid);
-      await setDoc(typingRef, { typing: false });
-    });
-
-    // Typing indicator updates
-    messageInput.addEventListener('input', async () => {
-      if (!currentChatUser) return;
-
-      const chatId = [currentUser.uid, currentChatUser.id].sort().join('_');
-      const typingRef = doc(db, 'chats', chatId, 'typing', currentUser.uid);
-      await setDoc(typingRef, { typing: true });
-
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(async () => {
-        await setDoc(typingRef, { typing: false });
-      }, 1500);
-    });
-
-    // Emoji picker simple support
-    emojiPickerBtn.addEventListener('click', () => {
-      const emojiList = ["😊","😂","😍","😢","👍","🙏","🎉","🔥","💖","😎"];
-      const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-      messageInput.value += randomEmoji;
-      messageInput.focus();
-    });
-
-    // Listen for new messages to show notifications and update unread counts
-    function listenForNewMessages() {
-      const chatsRef = collection(db, 'chats');
-      // We listen on all chats, then check if currentUser is receiver and not chatting with sender
-
-      onSnapshot(chatsRef, (snap) => {
-        snap.docChanges().forEach(change => {
-          if (change.type === 'added' || change.type === 'modified') {
-            const chatId = change.doc.id;
-            if (!chatId.includes(currentUser.uid)) return;
-
-            const messagesRef = collection(db, 'chats', chatId, 'messages');
-            const messagesQuery = query(messagesRef, orderBy('timestamp', 'desc'));
-            onSnapshot(messagesQuery, (msgSnap) => {
-              msgSnap.docChanges().forEach(changeMsg => {
-                if (changeMsg.type === 'added') {
-                  const msg = changeMsg.doc.data();
-
-                  // If received message and not chatting with sender, mark unread and notify
-                  if (msg.receiverId === currentUser.uid && ( !currentChatUser || currentChatUser.id !== msg.senderId)) {
-                    unreadCounts[msg.senderId] = (unreadCounts[msg.senderId] || 0) + 1;
-                    updateUsersListUnreadUI();
-                    // Show notification only if window not focused
-                    if (!document.hasFocus()) {
-                      showNotification(`New message from ${msg.senderName}`, msg.text);
-                    }
-                  }
-                }
-              });
-            });
-          }
-        });
-      });
-    }
-
-    // On auth state change
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
         loadUsers();
-        listenForNewMessages();
       } else {
-        window.location.href = 'login.html';
+        window.location.href = "login.html";
       }
     });
 
+    async function loadUsers() {
+      const userListEl = document.getElementById("userList");
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      usersSnapshot.forEach((docSnap) => {
+        if (docSnap.id !== currentUser.uid) {
+          const div = document.createElement("div");
+          div.className = "user";
+          div.textContent = docSnap.data().name;
+          div.onclick = () => selectUser(docSnap.id, docSnap.data().name);
+          userListEl.appendChild(div);
+        }
+      });
+    }
+
+    async function selectUser(uid, name) {
+      selectedUserId = uid;
+      document.getElementById("chatBox").innerHTML = "";
+      const chatQuery = query(collection(db, "messages"), orderBy("timestamp"));
+      onSnapshot(chatQuery, (snapshot) => {
+        const chatBox = document.getElementById("chatBox");
+        chatBox.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if ((data.sender === currentUser.uid && data.receiver === uid) ||
+              (data.sender === uid && data.receiver === currentUser.uid)) {
+            const msgEl = document.createElement("div");
+            msgEl.className = "message";
+            msgEl.textContent = `${data.sender === currentUser.uid ? "You" : name}: ${data.message}`;
+            chatBox.appendChild(msgEl);
+          }
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+
+    window.sendMessage = async () => {
+      const input = document.getElementById("messageInput");
+      const message = input.value.trim();
+      if (!message || !selectedUserId) return;
+
+      await addDoc(collection(db, "messages"), {
+        sender: currentUser.uid,
+        receiver: selectedUserId,
+        message,
+        timestamp: serverTimestamp(),
+      });
+      input.value = "";
+    };
+
+    window.logout = () => {
+      signOut(auth).then(() => window.location.href = "login.html");
+    };
+
+    window.toggleDarkMode = () => {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      localStorage.setItem("darkMode", isDark);
+      document.querySelector(".toggle-mode").textContent = isDark ? "Dark Mode" : "Light Mode";
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const isDark = localStorage.getItem("darkMode") === "true";
+      if (isDark) {
+        document.body.classList.add("dark");
+        document.querySelector(".toggle-mode").textContent = "Dark Mode";
+      } else {
+        document.querySelector(".toggle-mode").textContent = "Light Mode";
+      }
+    });
   </script>
 </body>
 </html>
