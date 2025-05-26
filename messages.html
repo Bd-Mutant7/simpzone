@@ -1,4 +1,3 @@
-<!-- Save this as index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,32 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SimpZone Messaging</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      background: #f0f2f5;
-      flex-direction: column;
+    :root {
+      --pink: #ff69b4;
+      --light-gray: #f0f2f5;
+      --white: #ffffff;
     }
-    .container {
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--light-gray);
       display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .navbar {
+      background: var(--pink);
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .navbar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.9rem;
+    }
+
+    .navbar button {
+      background: white;
+      color: var(--pink);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .container {
       flex: 1;
+      display: flex;
       overflow: hidden;
     }
+
     .sidebar {
       width: 300px;
-      background: #fff;
+      background: var(--white);
       border-right: 1px solid #ccc;
       overflow-y: auto;
     }
+
     .sidebar h2 {
       padding: 15px;
-      background: #ff69b4;
+      background: var(--pink);
       color: white;
       margin: 0;
       text-align: center;
     }
+
     .contact {
       padding: 10px;
       border-bottom: 1px solid #eee;
@@ -40,27 +84,26 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .contact:hover {
       background: #f9f9f9;
     }
-    .contact .name {
-      font-weight: bold;
-    }
-    .contact .preview {
-      font-size: 0.9em;
-      color: gray;
-    }
+
     .chat-area {
       flex: 1;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
+
     .chat-header {
-      background: #ff69b4;
+      background: var(--pink);
       color: white;
       padding: 10px;
       font-weight: bold;
+      flex-shrink: 0;
     }
+
     .chat-messages {
       flex: 1;
       padding: 10px;
@@ -69,51 +112,64 @@
       flex-direction: column;
       gap: 10px;
     }
+
     .message {
       max-width: 70%;
       padding: 10px;
       border-radius: 8px;
       background: #e4e6eb;
       position: relative;
+      word-wrap: break-word;
     }
+
     .message.sent {
       align-self: flex-end;
       background: #dcf8c6;
     }
+
     .message img {
       max-width: 100%;
       border-radius: 5px;
     }
+
     .message .status {
       font-size: 0.7em;
       text-align: right;
       color: #666;
     }
+
     .chat-input {
       display: flex;
+      flex-shrink: 0;
       border-top: 1px solid #ccc;
+      background: #fff;
     }
+
     .chat-input input[type="text"] {
       flex: 1;
       padding: 10px;
       border: none;
       outline: none;
     }
+
     .chat-input button {
       padding: 10px 15px;
       border: none;
-      background: #ff69b4;
+      background: var(--pink);
       color: white;
       cursor: pointer;
     }
+
     .chat-input button:hover {
       background: #ff1493;
     }
+
     .typing-indicator {
       font-size: 0.8em;
       color: gray;
       margin-left: 10px;
     }
+
     .online-indicator {
       width: 10px;
       height: 10px;
@@ -132,10 +188,22 @@
         height: 200px;
         overflow-y: auto;
       }
+      .chat-area {
+        flex: 1;
+        overflow: auto;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="navbar">
+    <h1>SimpZone</h1>
+    <div class="user-info">
+      <span id="userDisplay">User</span>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
   <div class="container">
     <div class="sidebar">
       <h2>Chats</h2>
@@ -160,7 +228,7 @@
       getDatabase, ref, set, push, onChildAdded, onValue, update
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import {
-      getAuth, onAuthStateChanged
+      getAuth, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
       getStorage, ref as sRef, uploadBytes, getDownloadURL
@@ -172,7 +240,7 @@
       databaseURL: "YOUR_DATABASE_URL",
       projectId: "YOUR_PROJECT_ID",
       storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
       appId: "YOUR_APP_ID"
     };
 
@@ -191,10 +259,12 @@
     const typingIndicator = document.getElementById("typingIndicator");
     const contactList = document.getElementById("contactList");
     const imageInput = document.getElementById("imageInput");
+    const userDisplay = document.getElementById("userDisplay");
 
     onAuthStateChanged(auth, user => {
       if (user) {
         currentUser = user;
+        userDisplay.textContent = user.displayName || "You";
         loadContacts();
       } else {
         window.location.href = "login.html";
@@ -223,7 +293,6 @@
             div.onclick = () => selectUser(userData);
             contactList.appendChild(div);
 
-            // Load preview
             const chatId = getChatId(currentUser.uid, userData.uid);
             onValue(ref(db, `chats/${chatId}`), snap => {
               let lastMsg = '';
@@ -321,6 +390,12 @@
         typingIndicator.textContent = snapshot.val() ? `${selectedUser.displayName} is typing...` : '';
       });
     }
+
+    window.logout = function () {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    };
   </script>
 </body>
 </html>
