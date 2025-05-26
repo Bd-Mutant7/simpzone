@@ -1,3 +1,4 @@
+<!-- Save this as index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +12,12 @@
       display: flex;
       height: 100vh;
       background: #f0f2f5;
+      flex-direction: column;
+    }
+    .container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
     }
     .sidebar {
       width: 300px;
@@ -47,7 +54,6 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
     .chat-header {
       background: #ff69b4;
@@ -64,7 +70,7 @@
       gap: 10px;
     }
     .message {
-      max-width: 60%;
+      max-width: 70%;
       padding: 10px;
       border-radius: 8px;
       background: #e4e6eb;
@@ -73,6 +79,10 @@
     .message.sent {
       align-self: flex-end;
       background: #dcf8c6;
+    }
+    .message img {
+      max-width: 100%;
+      border-radius: 5px;
     }
     .message .status {
       font-size: 0.7em;
@@ -83,7 +93,7 @@
       display: flex;
       border-top: 1px solid #ccc;
     }
-    .chat-input input {
+    .chat-input input[type="text"] {
       flex: 1;
       padding: 10px;
       border: none;
@@ -112,27 +122,39 @@
       display: inline-block;
       margin-right: 5px;
     }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: 200px;
+        overflow-y: auto;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>Chats</h2>
-    <div id="contactList"></div>
-  </div>
-  <div class="chat-area">
-    <div class="chat-header" id="chatHeader">Select a user</div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="typing-indicator" id="typingIndicator"></div>
-    <div class="chat-input">
-      <input type="text" id="messageInput" placeholder="Type a message..." />
-      <input type="file" id="imageInput" style="display: none;" />
-      <button onclick="document.getElementById('imageInput').click()">📷</button>
-      <button onclick="sendMessage()">➤</button>
+  <div class="container">
+    <div class="sidebar">
+      <h2>Chats</h2>
+      <div id="contactList"></div>
+    </div>
+    <div class="chat-area">
+      <div class="chat-header" id="chatHeader">Select a user</div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="typing-indicator" id="typingIndicator"></div>
+      <div class="chat-input">
+        <input type="text" id="messageInput" placeholder="Type a message..." />
+        <input type="file" id="imageInput" style="display:none" accept="image/*" />
+        <button onclick="document.getElementById('imageInput').click()">📷</button>
+        <button onclick="sendMessage()">➤</button>
+      </div>
     </div>
   </div>
 
   <script type="module">
-    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
       getDatabase, ref, set, push, onChildAdded, onValue, update
@@ -140,6 +162,9 @@
     import {
       getAuth, onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getStorage, ref as sRef, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
@@ -154,6 +179,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    const storage = getStorage(app);
 
     let currentUser = null;
     let selectedUser = null;
@@ -175,6 +201,10 @@
       }
     });
 
+    function getChatId(uid1, uid2) {
+      return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+    }
+
     function loadContacts() {
       onValue(ref(db, 'users'), snapshot => {
         contactList.innerHTML = '';
@@ -193,13 +223,13 @@
             div.onclick = () => selectUser(userData);
             contactList.appendChild(div);
 
-            // Load message preview
+            // Load preview
             const chatId = getChatId(currentUser.uid, userData.uid);
             onValue(ref(db, `chats/${chatId}`), snap => {
               let lastMsg = '';
               snap.forEach(msg => {
                 const m = msg.val();
-                lastMsg = m.text || '[Image]';
+                lastMsg = m.text ? m.text : '[Image]';
               });
               document.getElementById(`preview-${userData.uid}`).innerText = lastMsg;
             });
@@ -216,10 +246,6 @@
       listenTyping();
     }
 
-    function getChatId(uid1, uid2) {
-      return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
-    }
-
     function loadMessages() {
       const chatId = getChatId(currentUser.uid, selectedUser.uid);
       const chatRef = ref(db, `chats/${chatId}`);
@@ -227,18 +253,20 @@
         const msg = snapshot.val();
         const msgDiv = document.createElement("div");
         msgDiv.className = "message" + (msg.sender === currentUser.uid ? " sent" : "");
+
         if (msg.imageUrl) {
-          msgDiv.innerHTML = `<img src="${msg.imageUrl}" style="max-width:100%; border-radius:5px;" />`;
+          msgDiv.innerHTML = `<img src="${msg.imageUrl}" alt="Image Message" />`;
         } else {
           msgDiv.textContent = msg.text;
         }
+
         if (msg.sender === currentUser.uid) {
           msgDiv.innerHTML += `<div class="status">${msg.status}</div>`;
         }
+
         chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Mark as read
         if (msg.receiver === currentUser.uid && msg.status !== 'read') {
           update(ref(db, `chats/${chatId}/${snapshot.key}`), { status: 'read' });
         }
@@ -256,7 +284,10 @@
 
       let imageUrl = '';
       if (file) {
-        imageUrl = URL.createObjectURL(file); // Placeholder, replace with Firebase Storage in production
+        const storagePath = `images/${currentUser.uid}/${Date.now()}_${file.name}`;
+        const storageRef = sRef(storage, storagePath);
+        const snapshot = await uploadBytes(storageRef, file);
+        imageUrl = await getDownloadURL(snapshot.ref);
       }
 
       await set(newMsgRef, {
