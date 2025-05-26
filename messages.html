@@ -2,604 +2,294 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SimpZone Messages</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimpZone Messaging</title>
   <style>
-    :root {
-      --bg-light: #ffe6f0;
-      --bg-dark: #121212;
-      --card-light: #fff0f6;
-      --card-dark: #1f1f1f;
-      --text-light: #222;
-      --text-dark: #eee;
-      --primary-pink: #ff4da6;
-      --primary-pink-dark: #d63384;
-    }
-
     body {
+      font-family: Arial, sans-serif;
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-light);
-      color: var(--text-light);
       display: flex;
-      flex-direction: column;
       height: 100vh;
-      transition: background-color 0.3s, color 0.3s;
+      background: #f0f2f5;
     }
-
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-    }
-
-    nav {
-      background-color: var(--primary-pink);
-      color: white;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      user-select: none;
-    }
-
-    nav .brand {
-      font-size: 2.5rem;
-      font-weight: 900;
-      margin-bottom: 0.5rem;
-    }
-
-    nav .nav-links {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    nav .nav-links a {
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      padding: 0.3rem 0.7rem;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    nav .nav-links a:hover {
-      background-color: var(--primary-pink-dark);
-    }
-
-    #darkToggle {
-      margin-top: 0.5rem;
-      background: black;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 0.4rem 0.9rem;
-      cursor: pointer;
-      font-weight: bold;
-      align-self: center;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    body.dark #darkToggle {
-      background: white;
-      color: black;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      background: var(--card-light);
-      transition: background-color 0.3s;
-    }
-
-    body.dark main {
-      background: var(--card-dark);
-    }
-
-    /* User list panel */
-    #usersList {
-      width: 280px;
-      border-right: 1px solid #ddd;
+    .sidebar {
+      width: 300px;
+      background: #fff;
+      border-right: 1px solid #ccc;
       overflow-y: auto;
-      background: var(--card-light);
-      transition: background-color 0.3s;
     }
-
-    body.dark #usersList {
-      background: var(--card-dark);
-      border-color: #333;
+    .sidebar h2 {
+      padding: 15px;
+      background: #ff69b4;
+      color: white;
+      margin: 0;
+      text-align: center;
     }
-
-    #usersList h2 {
-      margin: 1rem;
-      font-weight: 700;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.5rem;
-      transition: border-color 0.3s;
-    }
-
-    body.dark #usersList h2 {
-      border-color: #444;
-    }
-
-    .user-item {
-      padding: 0.8rem 1rem;
-      cursor: pointer;
+    .contact {
+      padding: 10px;
       border-bottom: 1px solid #eee;
-      transition: background-color 0.3s, border-color 0.3s;
+      cursor: pointer;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.8rem;
     }
-
-    body.dark .user-item {
-      border-color: #333;
+    .contact:hover {
+      background: #f9f9f9;
     }
-
-    .user-item:hover {
-      background-color: var(--primary-pink);
-      color: white;
-    }
-
-    .user-item.selected {
-      background-color: var(--primary-pink-dark);
-      color: white;
+    .contact .name {
       font-weight: bold;
     }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #ccc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: white;
-      user-select: none;
+    .contact .preview {
+      font-size: 0.9em;
+      color: gray;
     }
-
-    /* Chat panel */
-    #chatPanel {
+    .chat-area {
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
+      position: relative;
     }
-
-    #chatHeader {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      background: var(--card-light);
-      font-weight: 700;
-      font-size: 1.4rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: background-color 0.3s, border-color 0.3s;
+    .chat-header {
+      background: #ff69b4;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
     }
-
-    body.dark #chatHeader {
-      background: var(--card-dark);
-      border-color: #333;
-    }
-
-    #messages {
+    .chat-messages {
       flex: 1;
-      padding: 1rem;
+      padding: 10px;
       overflow-y: auto;
-      background: var(--bg-light);
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: background-color 0.3s;
     }
-
-    body.dark #messages {
-      background: var(--bg-dark);
-    }
-
     .message {
       max-width: 60%;
-      padding: 0.7rem 1rem;
-      border-radius: 15px;
-      line-height: 1.3;
-      font-size: 1rem;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-      user-select: text;
+      padding: 10px;
+      border-radius: 8px;
+      background: #e4e6eb;
+      position: relative;
     }
-
     .message.sent {
-      background-color: var(--primary-pink);
-      color: white;
       align-self: flex-end;
-      border-bottom-right-radius: 0;
+      background: #dcf8c6;
     }
-
-    .message.received {
-      background-color: #eee;
-      color: #222;
-      align-self: flex-start;
-      border-bottom-left-radius: 0;
-    }
-
-    body.dark .message.received {
-      background-color: #333;
-      color: #ddd;
-    }
-
-    #typingIndicator {
-      height: 20px;
-      font-style: italic;
+    .message .status {
+      font-size: 0.7em;
+      text-align: right;
       color: #666;
-      margin: 0 1rem 10px;
-      min-height: 20px;
-      user-select: none;
     }
-
-    #chatInputArea {
+    .chat-input {
       display: flex;
-      padding: 0.7rem 1rem;
-      border-top: 1px solid #ddd;
-      background: var(--card-light);
-      transition: background-color 0.3s, border-color 0.3s;
+      border-top: 1px solid #ccc;
     }
-
-    body.dark #chatInputArea {
-      background: var(--card-dark);
-      border-color: #333;
-    }
-
-    #chatInput {
+    .chat-input input {
       flex: 1;
-      padding: 0.6rem 1rem;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 1rem;
-      outline: none;
-      resize: none;
-      max-height: 100px;
-      transition: border-color 0.3s, background-color 0.3s;
-    }
-
-    body.dark #chatInput {
-      border-color: #555;
-      background: #222;
-      color: white;
-    }
-
-    #sendBtn {
-      background-color: var(--primary-pink);
+      padding: 10px;
       border: none;
+      outline: none;
+    }
+    .chat-input button {
+      padding: 10px 15px;
+      border: none;
+      background: #ff69b4;
       color: white;
-      padding: 0 16px;
-      margin-left: 10px;
-      border-radius: 20px;
       cursor: pointer;
-      font-weight: bold;
-      font-size: 1rem;
-      transition: background-color 0.3s;
     }
-
-    #sendBtn:hover:not(:disabled) {
-      background-color: var(--primary-pink-dark);
+    .chat-input button:hover {
+      background: #ff1493;
     }
-
-    #sendBtn:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
+    .typing-indicator {
+      font-size: 0.8em;
+      color: gray;
+      margin-left: 10px;
     }
-
-    /* Scrollbar for user list and messages */
-    #usersList::-webkit-scrollbar,
-    #messages::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    #usersList::-webkit-scrollbar-thumb,
-    #messages::-webkit-scrollbar-thumb {
-      background-color: var(--primary-pink);
-      border-radius: 4px;
-    }
-
-    /* Responsive for small screens */
-    @media (max-width: 600px) {
-      main {
-        flex-direction: column;
-      }
-
-      #usersList {
-        width: 100%;
-        height: 150px;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-      }
-
-      body.dark #usersList {
-        border-color: #333;
-      }
-
-      #chatPanel {
-        flex: 1;
-        height: calc(100vh - 250px);
-      }
+    .online-indicator {
+      width: 10px;
+      height: 10px;
+      background: green;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
     }
   </style>
 </head>
 <body>
-  <nav>
-    <div class="brand">SimpZone 💘</div>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="login.html">Login</a>
-      <a href="messages.html">Messages</a>
-      <a href="#" id="logoutBtn">Logout</a>
+  <div class="sidebar">
+    <h2>Chats</h2>
+    <div id="contactList"></div>
+  </div>
+  <div class="chat-area">
+    <div class="chat-header" id="chatHeader">Select a user</div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="typing-indicator" id="typingIndicator"></div>
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <input type="file" id="imageInput" style="display: none;" />
+      <button onclick="document.getElementById('imageInput').click()">📷</button>
+      <button onclick="sendMessage()">➤</button>
     </div>
-    <button id="darkToggle">Dark Mode</button>
-  </nav>
-
-  <main>
-    <section id="usersList">
-      <h2>Users</h2>
-      <!-- dynamically filled user list here -->
-    </section>
-
-    <section id="chatPanel">
-      <div id="chatHeader">Select a user to chat</div>
-      <div id="messages"></div>
-      <div id="typingIndicator"></div>
-      <div id="chatInputArea">
-        <textarea id="chatInput" placeholder="Type your message..." rows="2" disabled></textarea>
-        <button id="sendBtn" disabled>Send</button>
-      </div>
-    </section>
-  </main>
+  </div>
 
   <script type="module">
+    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      getDatabase, ref, set, push, onChildAdded, onValue, update
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import {
-      getFirestore,
-      collection,
-      query,
-      where,
-      onSnapshot,
-      addDoc,
-      Timestamp,
-      orderBy,
-      doc,
-      setDoc,
-      getDoc,
-      updateDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      getAuth, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
-      authDomain: "simpzone-c261f.firebaseapp.com",
-      projectId: "simpzone-c261f",
-      storageBucket: "simpzone-c261f.appspot.com",
-      messagingSenderId: "112722316822",
-      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
     const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const usersListEl = document.getElementById("usersList");
-    const chatHeaderEl = document.getElementById("chatHeader");
-    const messagesEl = document.getElementById("messages");
-    const chatInput = document.getElementById("chatInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const typingIndicatorEl = document.getElementById("typingIndicator");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const darkToggleBtn = document.getElementById("darkToggle");
 
     let currentUser = null;
     let selectedUser = null;
-    let messagesListenerUnsub = null;
     let typingTimeout = null;
 
-    // Dark mode init
-    function applyTheme(theme) {
-      if (theme === "dark") {
-        document.body.classList.add("dark");
-        darkToggleBtn.textContent = "Light Mode";
-      } else {
-        document.body.classList.remove("dark");
-        darkToggleBtn.textContent = "Dark Mode";
-      }
-    }
+    const chatHeader = document.getElementById("chatHeader");
+    const chatMessages = document.getElementById("chatMessages");
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const contactList = document.getElementById("contactList");
+    const imageInput = document.getElementById("imageInput");
 
-    darkToggleBtn.addEventListener("click", () => {
-      const isDark = document.body.classList.toggle("dark");
-      localStorage.setItem("theme", isDark ? "dark" : "light");
-      darkToggleBtn.textContent = isDark ? "Light Mode" : "Dark Mode";
-    });
-
-    // Load saved theme
-    applyTheme(localStorage.getItem("theme") || "light");
-
-    // Logout
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      window.location.href = "login.html";
-    });
-
-    // Show error/message below input
-    function showError(msg, isError = true) {
-      typingIndicatorEl.style.color = isError ? "red" : "green";
-      typingIndicatorEl.textContent = msg;
-      if (!msg) typingIndicatorEl.style.color = "";
-    }
-
-    // Helper to create user avatar initials
-    function getInitials(name) {
-      if (!name) return "?";
-      return name.split(" ").map((n) => n[0].toUpperCase()).slice(0, 2).join("");
-    }
-
-    // Render users list
-    function renderUsers(users) {
-      usersListEl.innerHTML = `<h2>Users</h2>`;
-      users.forEach((user) => {
-        if (user.uid === currentUser.uid) return; // Skip self
-
-        const div = document.createElement("div");
-        div.classList.add("user-item");
-        div.dataset.uid = user.uid;
-        div.tabIndex = 0;
-        if (selectedUser && selectedUser.uid === user.uid) div.classList.add("selected");
-
-        div.innerHTML = `
-          <div class="user-avatar">${getInitials(user.displayName || user.email)}</div>
-          <div class="user-name">${user.displayName || user.email}</div>
-        `;
-
-        div.addEventListener("click", () => {
-          selectUser(user);
-        });
-
-        div.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            selectUser(user);
-          }
-        });
-
-        usersListEl.appendChild(div);
-      });
-    }
-
-    // Load all users from Firestore
-    async function loadUsers() {
-      // Users stored in "users" collection - each user has {uid, email, displayName}
-      const usersCol = collection(db, "users");
-      onSnapshot(usersCol, (snapshot) => {
-        const users = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
-        renderUsers(users);
-      });
-    }
-
-    // Chat conversation ID helper (consistent ID for 2 users)
-    function getChatId(uid1, uid2) {
-      return uid1 < uid2 ? uid1 + "_" + uid2 : uid2 + "_" + uid1;
-    }
-
-    // Listen to messages in chat
-    function listenToMessages(chatId) {
-      if (messagesListenerUnsub) {
-        messagesListenerUnsub();
-        messagesListenerUnsub = null;
-      }
-
-      const messagesCol = collection(db, "chats", chatId, "messages");
-      const q = query(messagesCol, orderBy("createdAt", "asc"));
-
-      messagesListenerUnsub = onSnapshot(q, (snapshot) => {
-        messagesEl.innerHTML = "";
-        snapshot.docs.forEach(doc => {
-          const msg = doc.data();
-          const div = document.createElement("div");
-          div.classList.add("message");
-          div.classList.add(msg.sender === currentUser.uid ? "sent" : "received");
-          div.textContent = msg.text;
-          messagesEl.appendChild(div);
-        });
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      });
-    }
-
-    // Send a new message
-    async function sendMessage(text) {
-      if (!selectedUser || !text.trim()) return;
-
-      const chatId = getChatId(currentUser.uid, selectedUser.uid);
-      const messagesCol = collection(db, "chats", chatId, "messages");
-
-      await addDoc(messagesCol, {
-        sender: currentUser.uid,
-        text: text.trim(),
-        createdAt: Timestamp.now()
-      });
-
-      chatInput.value = "";
-      sendBtn.disabled = true;
-      typingIndicatorEl.textContent = "";
-    }
-
-    // Handle input typing indicator (optional advanced)
-    // For simplicity: show "Typing..." only locally
-    chatInput.addEventListener("input", () => {
-      sendBtn.disabled = !chatInput.value.trim();
-
-      // Here you can add code to update typing status in Firestore if you want
-    });
-
-    // Select a user to chat
-    function selectUser(user) {
-      selectedUser = user;
-
-      // Update UI selected highlight
-      document.querySelectorAll(".user-item").forEach(div => {
-        div.classList.toggle("selected", div.dataset.uid === user.uid);
-      });
-
-      chatHeaderEl.textContent = `Chat with ${user.displayName || user.email}`;
-      chatInput.disabled = false;
-      sendBtn.disabled = true;
-      messagesEl.innerHTML = "<p style='text-align:center;color:#999;'>Loading messages...</p>";
-
-      const chatId = getChatId(currentUser.uid, user.uid);
-      listenToMessages(chatId);
-    }
-
-    // Auth state observer
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, user => {
       if (user) {
         currentUser = user;
-
-        // Save user info in 'users' collection for others to see
-        const userDoc = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(userDoc);
-        if (!docSnap.exists()) {
-          await setDoc(userDoc, {
-            email: currentUser.email,
-            displayName: currentUser.displayName || currentUser.email.split("@")[0]
-          });
-        }
-
-        loadUsers();
-
+        loadContacts();
       } else {
-        // Not logged in, redirect to login
         window.location.href = "login.html";
       }
     });
 
-    sendBtn.addEventListener("click", () => {
-      sendMessage(chatInput.value);
+    function loadContacts() {
+      onValue(ref(db, 'users'), snapshot => {
+        contactList.innerHTML = '';
+        snapshot.forEach(child => {
+          const userData = child.val();
+          if (userData.uid !== currentUser.uid) {
+            const div = document.createElement("div");
+            div.className = "contact";
+            div.innerHTML = `
+              <span>
+                <span class="online-indicator" style="background:${userData.online ? 'green' : 'gray'}"></span>
+                <span class="name">${userData.displayName}</span>
+              </span>
+              <span class="preview" id="preview-${userData.uid}">...</span>
+            `;
+            div.onclick = () => selectUser(userData);
+            contactList.appendChild(div);
+
+            // Load message preview
+            const chatId = getChatId(currentUser.uid, userData.uid);
+            onValue(ref(db, `chats/${chatId}`), snap => {
+              let lastMsg = '';
+              snap.forEach(msg => {
+                const m = msg.val();
+                lastMsg = m.text || '[Image]';
+              });
+              document.getElementById(`preview-${userData.uid}`).innerText = lastMsg;
+            });
+          }
+        });
+      });
+    }
+
+    function selectUser(user) {
+      selectedUser = user;
+      chatHeader.textContent = user.displayName;
+      chatMessages.innerHTML = '';
+      loadMessages();
+      listenTyping();
+    }
+
+    function getChatId(uid1, uid2) {
+      return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+    }
+
+    function loadMessages() {
+      const chatId = getChatId(currentUser.uid, selectedUser.uid);
+      const chatRef = ref(db, `chats/${chatId}`);
+      onChildAdded(chatRef, snapshot => {
+        const msg = snapshot.val();
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "message" + (msg.sender === currentUser.uid ? " sent" : "");
+        if (msg.imageUrl) {
+          msgDiv.innerHTML = `<img src="${msg.imageUrl}" style="max-width:100%; border-radius:5px;" />`;
+        } else {
+          msgDiv.textContent = msg.text;
+        }
+        if (msg.sender === currentUser.uid) {
+          msgDiv.innerHTML += `<div class="status">${msg.status}</div>`;
+        }
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Mark as read
+        if (msg.receiver === currentUser.uid && msg.status !== 'read') {
+          update(ref(db, `chats/${chatId}/${snapshot.key}`), { status: 'read' });
+        }
+      });
+    }
+
+    window.sendMessage = async function () {
+      const text = messageInput.value.trim();
+      const file = imageInput.files[0];
+      if (!text && !file) return;
+
+      const chatId = getChatId(currentUser.uid, selectedUser.uid);
+      const msgRef = ref(db, `chats/${chatId}`);
+      const newMsgRef = push(msgRef);
+
+      let imageUrl = '';
+      if (file) {
+        imageUrl = URL.createObjectURL(file); // Placeholder, replace with Firebase Storage in production
+      }
+
+      await set(newMsgRef, {
+        text,
+        imageUrl,
+        sender: currentUser.uid,
+        receiver: selectedUser.uid,
+        timestamp: Date.now(),
+        status: 'sent'
+      });
+
+      messageInput.value = '';
+      imageInput.value = '';
+      sendTyping(false);
+    };
+
+    messageInput.addEventListener("input", () => {
+      sendTyping(true);
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => sendTyping(false), 2000);
     });
 
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        if (!sendBtn.disabled) {
-          sendMessage(chatInput.value);
-        }
+    function sendTyping(isTyping) {
+      if (selectedUser) {
+        set(ref(db, `typing/${selectedUser.uid}/${currentUser.uid}`), isTyping);
       }
-    });
+    }
+
+    function listenTyping() {
+      onValue(ref(db, `typing/${currentUser.uid}/${selectedUser.uid}`), snapshot => {
+        typingIndicator.textContent = snapshot.val() ? `${selectedUser.displayName} is typing...` : '';
+      });
+    }
   </script>
 </body>
 </html>
