@@ -74,7 +74,7 @@
       background: var(--contact-bg-dark);
     }
 
-    .sidebar h2 {
+    .sidebar h2, .sidebar h3 {
       padding: 15px;
       background: var(--primary-color);
       color: white;
@@ -87,7 +87,6 @@
       border-bottom: 1px solid #eee;
       cursor: pointer;
       display: flex;
-      justify-content: flex-start;
       align-items: center;
       gap: 8px;
       transition: background 0.2s;
@@ -185,7 +184,6 @@
     .online-indicator {
       width: 10px;
       height: 10px;
-      background: green;
       border-radius: 50%;
       display: inline-block;
       margin-right: 5px;
@@ -208,7 +206,7 @@
   <div class="navbar">
     <div class="logo">SimpZone</div>
     <div class="buttons">
-      <button onclick="window.location.href='index.html'">Home</button>
+      <button onclick="window.location.href='home.html'">Home</button>
       <button onclick="toggleDarkMode()">🌙</button>
     </div>
   </div>
@@ -216,6 +214,7 @@
   <div class="container">
     <div class="sidebar">
       <h2>Chats</h2>
+      <h3 id="onlineCount">Online Users (0)</h3>
       <div id="contactList"></div>
     </div>
     <div class="chat-area">
@@ -258,6 +257,7 @@
     const sendBtnEl = document.getElementById('sendBtn');
     const imageInputEl = document.getElementById('imageInput');
     const imageBtnEl = document.getElementById('imageBtn');
+    const onlineCountEl = document.getElementById('onlineCount');
 
     let currentUser = null;
     let selectedUser = null;
@@ -281,18 +281,19 @@
       usersRef.on('value', snapshot => {
         const usersData = snapshot.val();
         contactListEl.innerHTML = '';
-        if (!usersData) {
-          contactListEl.innerHTML = '<p>No users found.</p>';
-          return;
-        }
+        let onlineCount = 0;
+
         for (const uid in usersData) {
           if (uid !== currentUser.uid) {
             const userInfo = usersData[uid];
             const contactDiv = document.createElement('div');
             contactDiv.className = 'contact';
             contactDiv.dataset.uid = uid;
+            const isOnline = userInfo.online;
+            if (isOnline) onlineCount++;
+
             contactDiv.innerHTML = `
-              <span class="online-indicator" style="background:${userInfo.online ? 'green' : 'gray'}"></span>
+              <span class="online-indicator" style="background:${isOnline ? 'green' : 'gray'}"></span>
               <span class="name">${userInfo.displayName || 'Unnamed'}</span>
             `;
             contactDiv.addEventListener('click', () => {
@@ -301,6 +302,7 @@
             contactListEl.appendChild(contactDiv);
           }
         }
+        onlineCountEl.textContent = `Online Users (${onlineCount})`;
       });
     }
 
@@ -382,7 +384,7 @@
           sendMessage();
         }
       });
-      imageBtnEl.addEventListener('click', () => imageInputEl.click());
+      imageInputEl.addEventListener('change', () => {});
     }
   </script>
 </body>
