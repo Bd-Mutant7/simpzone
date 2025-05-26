@@ -208,7 +208,7 @@
   <div class="navbar">
     <div class="logo">SimpZone</div>
     <div class="buttons">
-      <button onclick="window.location.href='home.html'">Home</button>
+      <button onclick="window.location.href='index.html'">Home</button>
       <button onclick="toggleDarkMode()">🌙</button>
     </div>
   </div>
@@ -236,18 +236,16 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    // Your Firebase config here
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.firebasestorage.app",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
@@ -264,25 +262,20 @@
     let currentUser = null;
     let selectedUser = null;
 
-    // Toggle dark mode function from your code
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
     }
 
-    // Listen for auth state changes
     auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
         loadContacts();
         setupSendMessageListeners();
       } else {
-        // Redirect to login or show message
         alert("You must be logged in.");
-        // Optionally: window.location.href = 'login.html';
       }
     });
 
-    // Load users from Realtime Database, exclude current user
     function loadContacts() {
       const usersRef = db.ref('users');
       usersRef.on('value', snapshot => {
@@ -311,45 +304,31 @@
       });
     }
 
-    // Select a user to chat with
     function selectUser(uid, displayName) {
       selectedUser = { uid, displayName };
-
-      // Highlight selection
       document.querySelectorAll('.contact').forEach(el => {
         el.classList.toggle('selected', el.dataset.uid === uid);
       });
-
       chatHeaderEl.textContent = displayName;
       chatMessagesEl.innerHTML = '';
       messageInputEl.disabled = false;
       sendBtnEl.disabled = false;
       imageBtnEl.disabled = false;
-
-      // Load messages between currentUser and selectedUser
       loadMessages(currentUser.uid, uid);
     }
 
-    // Load chat messages between two users
     function loadMessages(uid1, uid2) {
       const chatId = getChatId(uid1, uid2);
       const messagesRef = db.ref(`messages/${chatId}`);
-
-      messagesRef.off(); // Remove previous listeners if any
-
+      messagesRef.off();
       messagesRef.on('value', snapshot => {
         const messages = snapshot.val() || {};
         chatMessagesEl.innerHTML = '';
-
-        // Sort messages by timestamp ascending
         const sortedMessages = Object.values(messages).sort((a, b) => a.timestamp - b.timestamp);
-
         sortedMessages.forEach(msg => {
           const msgDiv = document.createElement('div');
           msgDiv.className = 'message ' + (msg.sender === currentUser.uid ? 'sent' : 'received');
           msgDiv.textContent = msg.text || '';
-
-          // If image attached
           if (msg.imageUrl) {
             const img = document.createElement('img');
             img.src = msg.imageUrl;
@@ -358,34 +337,23 @@
             img.style.marginTop = '5px';
             msgDiv.appendChild(img);
           }
-
           chatMessagesEl.appendChild(msgDiv);
         });
-
         chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
       });
     }
 
-    // Compose chat ID - ensure consistent ordering so both users share same chat ID
     function getChatId(uid1, uid2) {
       return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
     }
 
-    // Send message handler
     function sendMessage() {
       const text = messageInputEl.value.trim();
       if (!text && !imageInputEl.files.length) return;
-
       const chatId = getChatId(currentUser.uid, selectedUser.uid);
       const messagesRef = db.ref(`messages/${chatId}`);
-
-      // Handle image upload - for demo, we skip actual storage, just placeholders.
-      // (You can extend this with Firebase Storage for real image uploads)
-
       if (imageInputEl.files.length > 0) {
         const file = imageInputEl.files[0];
-        // Here, you'd upload file to Firebase Storage and get URL.
-        // For now, just simulate upload and send placeholder image URL
         const fakeImageUrl = URL.createObjectURL(file);
         const newMsg = {
           sender: currentUser.uid,
@@ -394,7 +362,7 @@
           timestamp: Date.now(),
         };
         messagesRef.push(newMsg);
-        imageInputEl.value = ''; // reset file input
+        imageInputEl.value = '';
       } else {
         const newMsg = {
           sender: currentUser.uid,
@@ -403,11 +371,9 @@
         };
         messagesRef.push(newMsg);
       }
-
       messageInputEl.value = '';
     }
 
-    // Setup event listeners for send buttons and inputs
     function setupSendMessageListeners() {
       sendBtnEl.addEventListener('click', sendMessage);
       messageInputEl.addEventListener('keypress', e => {
@@ -416,12 +382,8 @@
           sendMessage();
         }
       });
-
-      imageInputEl.addEventListener('change', () => {
-        // Optional: preview image or auto-send
-      });
+      imageBtnEl.addEventListener('click', () => imageInputEl.click());
     }
   </script>
-
 </body>
 </html>
