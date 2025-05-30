@@ -151,6 +151,11 @@
       signInWithEmailAndPassword,
       sendPasswordResetEmail
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      set
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -158,11 +163,13 @@
       projectId: "simpzone-c261f",
       storageBucket: "simpzone-c261f.appspot.com",
       messagingSenderId: "112722316822",
-      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+      appId: "1:112722316822:web:40f25acde13d98821f2f37",
+      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
     window.addEventListener("DOMContentLoaded", () => {
       const emailInput = document.getElementById("email");
@@ -170,7 +177,6 @@
       const messageEl = document.getElementById("message");
       const toggleBtn = document.getElementById("darkToggle");
 
-      // Set theme on load
       if (localStorage.getItem("theme") === "dark") {
         document.body.classList.add("dark");
         toggleBtn.textContent = "Light Mode";
@@ -211,7 +217,6 @@
         return true;
       }
 
-      // Login handler
       document.getElementById("loginBtn").addEventListener("click", () => {
         if (!validateForm()) return;
 
@@ -227,14 +232,21 @@
           });
       });
 
-      // Register handler
       document.getElementById("registerBtn").addEventListener("click", () => {
         if (!validateForm()) return;
 
         createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
           .then((userCredential) => {
+            const user = userCredential.user;
             const username = emailInput.value.split("@")[0];
-            localStorage.setItem("user", userCredential.user.email);
+
+            set(ref(db, 'users/' + user.uid), {
+              displayName: username,
+              photoUrl: "https://api.dicebear.com/7.x/thumbs/svg?seed=" + username,
+              online: true
+            });
+
+            localStorage.setItem("user", user.email);
             localStorage.setItem("name", username);
             window.location.href = "index.html";
           })
@@ -243,7 +255,6 @@
           });
       });
 
-      // Forgot Password handler
       document.getElementById("forgotPasswordBtn").addEventListener("click", () => {
         const email = emailInput.value.trim();
         if (!email) {
@@ -280,7 +291,7 @@
       <input type="password" id="password" placeholder="Password" required autocomplete="current-password" /><br>
       <button id="loginBtn" type="button">Login</button>
       <button id="registerBtn" type="button">Register</button>
-      <button id="forgotPasswordBtn" type="button" style="background-color: #aaa;">Forgot Password?</button>
+      <button id="forgotPasswordBtn" type="button">Forgot Password?</button>
       <p id="message" aria-live="polite" style="color: red; margin-top: 1rem;"></p>
     </div>
   </div>
