@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimpZone - Register</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffe6f0;
+      margin: 0;
+      padding: 2rem;
+      padding-top: 130px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background: #1e1e1e;
+      color: white;
+    }
+
+    h2 {
+      color: #d63384;
+      text-align: center;
+    }
+
+    .dark-mode h2 {
+      color: #ffb6c1;
+    }
+
+    .navbar {
+      background-color: #ff4da6;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .navbar h1 {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: white;
+      margin: 0;
+      font-family: 'Segoe UI', cursive;
+    }
+
+    .navbar .nav-links {
+      display: flex;
+      gap: 10px;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 8px 16px;
+    }
+
+    .navbar a:hover {
+      background-color: #d63384;
+      border-radius: 4px;
+    }
+
+    .footer {
+      background-color: #ff4da6;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      background-color: #ff4da6;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    form {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .dark-mode form {
+      background-color: #2a2a2a;
+      color: white;
+    }
+
+    .dark-mode input {
+      background-color: #333;
+      color: white;
+      border: 1px solid #666;
+    }
+
+    .dark-toggle {
+      background: black;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .dark-mode .dark-toggle {
+      background: white;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>SimpZone</h1>
+    <div class="nav-links">
+      <a href="login.html">Login</a>
+    </div>
+  </div>
+
+  <h2>Create Your Account</h2>
+
+  <form id="registerForm">
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <input type="text" id="displayName" placeholder="Display Name" required />
+    <button type="submit">Register</button>
+  </form>
+
+  <div class="footer">
+    <button onclick="location.href='login.html'">Already have an account? Login</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
+      authDomain: "simpzone-c261f.firebaseapp.com",
+      projectId: "simpzone-c261f",
+      storageBucket: "simpzone-c261f.appspot.com",
+      messagingSenderId: "112722316822",
+      appId: "1:112722316822:web:40f25acde13d98821f2f37",
+      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const registerForm = document.getElementById("registerForm");
+
+    registerForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const displayName = document.getElementById("displayName").value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+
+          // Save additional user data to Realtime Database
+          set(ref(db, 'users/' + user.uid), {
+            displayName: displayName,
+            email: email,
+            photoUrl: "default.jpg", // Placeholder for photo URL
+            online: false // Placeholder for online status
+          }).then(() => {
+            alert("User registered successfully!");
+            window.location.href = "login.html"; // Redirect to login page
+          }).catch((error) => {
+            alert("Error saving user data: " + error.message);
+          });
+        })
+        .catch((error) => {
+          alert("Error registering: " + error.message);
+        });
+    });
+  </script>
+</body>
+</html>
