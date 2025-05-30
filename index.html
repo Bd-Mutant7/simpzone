@@ -10,7 +10,7 @@
       background: #ffe6f0;
       margin: 0;
       padding: 2rem;
-      padding-top: 90px; /* Add top padding to account for the fixed navbar */
+      padding-top: 90px;
       text-align: center;
       transition: background 0.3s, color 0.3s;
     }
@@ -134,12 +134,41 @@
       max-height: 70vh;
       overflow-y: auto;
     }
+
+    #allUsers {
+      max-width: 400px;
+      margin: 20px auto;
+      text-align: left;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background-color: #f2f2f2;
+      margin-bottom: 8px;
+      border-radius: 10px;
+    }
+
+    .dark-mode .user {
+      background-color: #2a2a2a;
+    }
+
+    .user .status {
+      font-size: 18px;
+    }
+
+    .user .user-name {
+      font-size: 16px;
+    }
   </style>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -147,12 +176,14 @@
       projectId: "simpzone-c261f",
       storageBucket: "simpzone-c261f.appspot.com",
       messagingSenderId: "112722316822",
-      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+      appId: "1:112722316822:web:40f25acde13d98821f2f37",
+      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const rtdb = getDatabase(app);
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -173,6 +204,26 @@
       } else {
         localStorage.removeItem("user");
         window.location.href = "login.html";
+      }
+    });
+
+    onValue(ref(rtdb, 'users'), snapshot => {
+      const users = snapshot.val();
+      const allUsersDiv = document.getElementById("allUsers");
+      allUsersDiv.innerHTML = '';
+      for (const uid in users) {
+        const user = users[uid];
+        const name = user.displayName || "Unnamed User";
+        const isOnline = user.online;
+        const statusColor = isOnline ? 'green' : 'gray';
+
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user';
+        userDiv.innerHTML = `
+          <span class="status" style="color: ${statusColor}">●</span>
+          <span class="user-name">${name}</span>
+        `;
+        allUsersDiv.appendChild(userDiv);
       }
     });
 
@@ -243,6 +294,9 @@
       <button onclick="window.location.href='messages.html?to=Jason'">💬 Message</button>
     </div>
   </div>
+
+  <h2>All Registered Users</h2>
+  <div id="allUsers"></div>
 
   <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
 
