@@ -1,3 +1,4 @@
+<!-- PLACE THIS ENTIRE FILE AS index.html OR WHATEVER PAGE YOU WANT -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,20 +11,24 @@
       background: #ffe6f0;
       margin: 0;
       padding: 2rem;
-      padding-top: 90px;
+      padding-top: 130px;
       text-align: center;
       transition: background 0.3s, color 0.3s;
     }
+
     body.dark-mode {
       background: #1e1e1e;
       color: white;
     }
+
     h2 {
       color: #d63384;
     }
+
     .dark-mode h2 {
       color: #ffb6c1;
     }
+
     button {
       padding: 10px 20px;
       margin: 10px;
@@ -33,45 +38,7 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #e73370;
-    }
-    input[type="text"] {
-      padding: 10px;
-      width: 80%;
-      max-width: 400px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-    }
-    .profile-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 300px;
-      margin: 2rem auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .dark-mode .profile-card {
-      background: #333;
-    }
-    .profile-pic {
-      width: 100%;
-      border-radius: 12px;
-    }
-    .hearts {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3rem;
-      animation: float 1s ease-in-out;
-      z-index: 999;
-    }
-    @keyframes float {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
-    }
+
     .navbar {
       background-color: #ff4da6;
       padding: 1rem;
@@ -84,6 +51,7 @@
       align-items: center;
       z-index: 1000;
     }
+
     .navbar h1 {
       font-size: 1.8rem;
       font-weight: bold;
@@ -91,20 +59,24 @@
       margin: 0;
       font-family: 'Segoe UI', cursive;
     }
+
     .navbar .nav-links {
       display: flex;
       gap: 10px;
     }
+
     .navbar a {
       color: white;
       text-decoration: none;
       font-size: 16px;
       padding: 8px 16px;
     }
+
     .navbar a:hover {
       background-color: #d63384;
       border-radius: 4px;
     }
+
     .dark-toggle {
       background: black;
       color: white;
@@ -112,51 +84,97 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     .dark-mode .dark-toggle {
       background: white;
       color: black;
     }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    #mainContent {
+      padding-top: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 300px;
+      margin: 2rem auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .dark-mode .profile-card {
+      background: #333;
+    }
+
+    .profile-pic {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .hearts {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      animation: float 1s ease-in-out;
+      z-index: 999;
+    }
+
+    @keyframes float {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
+    }
+
+    #allUsers {
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background-color: #f2f2f2;
+      margin-bottom: 8px;
+      border-radius: 10px;
+    }
+
+    .dark-mode .user {
+      background-color: #2a2a2a;
+    }
+
+    .user .status {
+      font-size: 18px;
+    }
+
+    .user .user-name {
+      font-size: 16px;
+    }
+
     .footer {
       background-color: #ff4da6;
       padding: 1rem;
       text-align: center;
       margin-top: 2rem;
     }
-    #mainContent {
-      padding-top: 20px;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    #allUsers {
-      max-width: 400px;
-      margin: 20px auto;
-      text-align: left;
-    }
-    .user {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      background-color: #f9f9f9;
-      margin-bottom: 8px;
-      border-radius: 10px;
-    }
-    .dark-mode .user {
-      background-color: #222;
-    }
-    .user img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid #ccc;
-    }
-    .user .status {
-      font-size: 18px;
-    }
-    .user .user-name {
-      font-weight: 600;
-    }
   </style>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -178,6 +196,37 @@
     const db = getFirestore(app);
     const rtdb = getDatabase(app);
 
+    const allUsersDiv = document.getElementById("allUsers");
+    const searchInput = document.getElementById("searchInput");
+
+    function renderUsers(users, filter = "") {
+      allUsersDiv.innerHTML = '';
+      for (const uid in users) {
+        const user = users[uid];
+        const name = user.displayName || "Unnamed User";
+        const isOnline = user.online;
+        const statusColor = isOnline ? 'green' : 'gray';
+
+        if (name.toLowerCase().includes(filter.toLowerCase())) {
+          const userDiv = document.createElement('div');
+          userDiv.className = 'user';
+          userDiv.innerHTML = `
+            <span class="status" style="color: ${statusColor}">●</span>
+            <span class="user-name">${name}</span>
+          `;
+          allUsersDiv.appendChild(userDiv);
+        }
+      }
+    }
+
+    onValue(ref(rtdb, 'users'), snapshot => {
+      const users = snapshot.val();
+      renderUsers(users);
+      searchInput.addEventListener("input", () => {
+        renderUsers(users, searchInput.value);
+      });
+    });
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -198,50 +247,6 @@
         localStorage.removeItem("user");
         window.location.href = "login.html";
       }
-    });
-
-    const allUsersDiv = document.getElementById("allUsers");
-    const searchInput = document.createElement("input");
-    searchInput.type = "text";
-    searchInput.id = "searchInput";
-    searchInput.placeholder = "Search users by name...";
-    document.body.insertBefore(searchInput, allUsersDiv);
-
-    onValue(ref(rtdb, 'users'), snapshot => {
-      const users = snapshot.val();
-      let allUsers = [];
-
-      for (const uid in users) {
-        const user = users[uid];
-        const name = user.displayName || "Unnamed User";
-        const profilePic = user.profilePicture || "images/default.jpg";
-        const isOnline = user.online;
-        const statusColor = isOnline ? 'green' : 'gray';
-
-        allUsers.push({
-          name,
-          profilePic,
-          statusColor
-        });
-      }
-
-      const renderUsers = (filter = "") => {
-        allUsersDiv.innerHTML = '';
-        const filtered = allUsers.filter(u => u.name.toLowerCase().includes(filter.toLowerCase()));
-        for (const user of filtered) {
-          const userDiv = document.createElement('div');
-          userDiv.className = 'user';
-          userDiv.innerHTML = `
-            <img src="${user.profilePic}" alt="profile" />
-            <span class="status" style="color: ${user.statusColor}">●</span>
-            <span class="user-name">${user.name}</span>
-          `;
-          allUsersDiv.appendChild(userDiv);
-        }
-      };
-
-      renderUsers();
-      searchInput.addEventListener("input", (e) => renderUsers(e.target.value));
     });
 
     window.logout = () => {
@@ -289,6 +294,8 @@
       <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
     </div>
   </div>
+
+  <input type="text" id="searchInput" placeholder="Search users by name..." />
 
   <h2 id="welcomeMessage">Loading...</h2>
   <button onclick="logout()">Logout</button>
