@@ -1,4 +1,3 @@
-<!-- PLACE THIS ENTIRE FILE AS index.html OR WHATEVER PAGE YOU WANT -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -201,30 +200,48 @@
 
     function renderUsers(users, filter = "") {
       allUsersDiv.innerHTML = '';
+      const onlineUsers = [];
+      const offlineUsers = [];
+
       for (const uid in users) {
         const user = users[uid];
+        if (!user) continue;
+
         const name = user.displayName || "Unnamed User";
         const isOnline = user.online;
         const statusColor = isOnline ? 'green' : 'gray';
 
+        // Ensure there is a photoUrl or fallback image
+        const profilePic = user.photoUrl || 'default.jpg';
+
+        // Create profile card HTML dynamically
+        const userCard = `
+          <div class="profile-card" onclick="window.location.href='profile.html?uid=${uid}'">
+            <img src="${profilePic}" class="profile-pic" alt="${name}" />
+            <h3>${name}</h3>
+            <p>Status: <span style="color: ${statusColor}">${isOnline ? 'Online' : 'Offline'}</span></p>
+          </div>
+        `;
+
+        // Filter by search term
         if (name.toLowerCase().includes(filter.toLowerCase())) {
-          const userDiv = document.createElement('div');
-          userDiv.className = 'user';
-          userDiv.innerHTML = `
-            <span class="status" style="color: ${statusColor}">●</span>
-            <span class="user-name">${name}</span>
-          `;
-          allUsersDiv.appendChild(userDiv);
+          if (isOnline) {
+            onlineUsers.push(userCard);
+          } else {
+            offlineUsers.push(userCard);
+          }
         }
       }
+
+      // Display online first, then offline
+      allUsersDiv.innerHTML = [...onlineUsers, ...offlineUsers].join('');
     }
 
     onValue(ref(rtdb, 'users'), snapshot => {
       const users = snapshot.val();
-      renderUsers(users);
-      searchInput.addEventListener("input", () => {
-        renderUsers(users, searchInput.value);
-      });
+      if (users) {
+        renderUsers(users);
+      }
     });
 
     onAuthStateChanged(auth, async (user) => {
@@ -273,60 +290,39 @@
       document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
     };
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const isDark = localStorage.getItem("darkMode") === "true";
-      if (isDark) {
-        document.body.classList.add("dark-mode");
-      }
-      document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
+    // Check saved dark mode preference
+    if (localStorage.getItem("darkMode") === "true") {
+      document.body.classList.add("dark-mode");
+      document.getElementById("darkToggle").textContent = "Light Mode";
+    }
+
+    searchInput.addEventListener('input', function() {
+      renderUsers(users, searchInput.value);
     });
   </script>
 </head>
 <body>
-
   <div class="navbar">
     <h1>SimpZone</h1>
     <div class="nav-links">
-      <a href="index.html">Home</a>
       <a href="matches.html">Matches</a>
       <a href="messages.html">Messages</a>
-      <a href="#" onclick="logout()">Logout</a>
-      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
+      <a href="index.html" id="darkToggle" class="dark-toggle" onclick="toggleDarkMode()">Dark Mode</a>
     </div>
   </div>
-
-  <input type="text" id="searchInput" placeholder="Search users by name..." />
-
-  <h2 id="welcomeMessage">Loading...</h2>
-  <button onclick="logout()">Logout</button>
-  <button onclick="goToProfile()">View/Edit My Profile</button>
-
   <div id="mainContent">
-    <div class="profile-card">
-      <img src="images/user1.jpg" alt="User" class="profile-pic">
-      <h3>Emily, 24</h3>
-      <p>Loves coffee, travel, and cats 😻</p>
-      <button onclick="match()">💘 Match</button>
-      <button onclick="window.location.href='messages.html?to=Emily'">💬 Message</button>
-    </div>
-
-    <div class="profile-card">
-      <img src="images/user2.jpg" alt="User" class="profile-pic">
-      <h3>Jason, 27</h3>
-      <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
-      <button onclick="match()">💘 Match</button>
-      <button onclick="window.location.href='messages.html?to=Jason'">💬 Message</button>
+    <h2>Find New Friends 💘</h2>
+    <p id="welcomeMessage">Welcome 💘</p>
+    <input type="text" id="searchInput" placeholder="Search users..." />
+    <div id="allUsers">
+      <!-- Users will be dynamically rendered here -->
     </div>
   </div>
-
-  <h2>All Registered Users</h2>
-  <div id="allUsers"></div>
-
-  <audio id="matchSound" src="sounds/match.mp3" preload="auto"></audio>
-
   <div class="footer">
-    <p>&copy; 2025 SimpZone | All rights reserved</p>
+    <button onclick="logout()">Logout</button>
+    <button onclick="goToProfile()">Create Profile</button>
+    <button onclick="match()">Match</button>
   </div>
-
+  <audio id="matchSound" src="match_sound.mp3"></audio>
 </body>
 </html>
