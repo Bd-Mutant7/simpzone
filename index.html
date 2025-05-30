@@ -96,22 +96,44 @@
       cursor: pointer;
     }
 
+    #searchInput {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      margin: 1rem auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .dark-mode #searchInput {
+      background-color: #2a2a2a;
+      color: white;
+      border: 1px solid #666;
+    }
+
     #userList {
-      max-width: 600px;
-      margin: 2rem auto;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
+      margin: 2rem auto;
+      max-width: 1200px;
     }
 
     .user-card {
-      background-color: #f8f8f8;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
+      background-color: #fff;
       border-radius: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 1rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .user-card:hover {
+      transform: translateY(-4px);
     }
 
     .dark-mode .user-card {
@@ -119,10 +141,11 @@
     }
 
     .user-card img {
-      width: 64px;
-      height: 64px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       object-fit: cover;
+      margin-bottom: 10px;
       border: 3px solid gray;
     }
 
@@ -130,19 +153,14 @@
       border-color: limegreen;
     }
 
-    .user-card .info {
-      display: flex;
-      flex-direction: column;
+    .user-card h3 {
+      margin: 0.5rem 0 0.2rem;
     }
 
-    .user-card .info h3 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-
-    .user-card .info p {
+    .user-card p {
       margin: 0;
       font-size: 0.9rem;
+      text-align: center;
     }
   </style>
 </head>
@@ -156,7 +174,9 @@
     </div>
   </div>
 
-  <h2>Find New Friends 💘</h2>
+  <h2>Welcome to SimpZone 💘</h2>
+
+  <input type="text" id="searchInput" placeholder="Search users by name...">
   <div id="userList"></div>
 
   <div class="footer">
@@ -182,27 +202,39 @@
     const db = getDatabase(app);
 
     const userListDiv = document.getElementById("userList");
+    const searchInput = document.getElementById("searchInput");
+    let allUsers = {};
 
     const usersRef = ref(db, "users");
     onValue(usersRef, (snapshot) => {
-      userListDiv.innerHTML = ""; // Clear existing users
-      const users = snapshot.val();
-      if (users) {
-        Object.entries(users).forEach(([userId, user]) => {
-          const card = document.createElement("div");
-          card.className = `user-card ${user.online ? 'online' : ''}`;
-          card.onclick = () => location.href = `profile.html?uid=${userId}`;
-          card.innerHTML = `
-            <img src="${user.photoUrl || 'default.jpg'}" alt="${user.displayName || 'User'}">
-            <div class="info">
-              <h3>${user.displayName || 'Unnamed User'}</h3>
-              <p>${user.online ? "🟢 Online" : "⚪ Offline"}</p>
-            </div>
-          `;
-          userListDiv.appendChild(card);
-        });
-      }
+      allUsers = snapshot.val() || {};
+      displayUsers(allUsers);
     });
+
+    searchInput.addEventListener("input", () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = Object.fromEntries(
+        Object.entries(allUsers).filter(([_, user]) =>
+          (user.displayName || "").toLowerCase().includes(term)
+        )
+      );
+      displayUsers(filtered);
+    });
+
+    function displayUsers(users) {
+      userListDiv.innerHTML = "";
+      Object.entries(users).forEach(([userId, user]) => {
+        const card = document.createElement("div");
+        card.className = `user-card ${user.online ? 'online' : ''}`;
+        card.onclick = () => location.href = `profile.html?uid=${userId}`;
+        card.innerHTML = `
+          <img src="${user.photoUrl || 'default.jpg'}" alt="${user.displayName || 'User'}">
+          <h3>${user.displayName || 'Unnamed User'}</h3>
+          <p>${user.online ? "🟢 Online" : "⚪ Offline"}</p>
+        `;
+        userListDiv.appendChild(card);
+      });
+    }
 
     function toggleDarkMode() {
       const isDark = document.body.classList.toggle("dark-mode");
@@ -210,7 +242,7 @@
       document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
     }
 
-    // Restore dark mode if set
+    // Load dark mode state on startup
     if (localStorage.getItem("darkMode") === "true") {
       document.body.classList.add("dark-mode");
       document.getElementById("darkToggle").textContent = "Light Mode";
