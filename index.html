@@ -11,7 +11,6 @@
       margin: 0;
       padding: 2rem;
       padding-top: 130px;
-      text-align: center;
       transition: background 0.3s, color 0.3s;
     }
 
@@ -22,20 +21,11 @@
 
     h2 {
       color: #d63384;
+      text-align: center;
     }
 
     .dark-mode h2 {
       color: #ffb6c1;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      background-color: #ff4da6;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
     }
 
     .navbar {
@@ -89,96 +79,94 @@
       color: black;
     }
 
-    input[type="text"] {
-      padding: 10px;
-      width: 80%;
-      max-width: 400px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-
-    #mainContent {
-      padding-top: 20px;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-
-    .profile-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 300px;
-      margin: 2rem auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .dark-mode .profile-card {
-      background: #333;
-    }
-
-    .profile-pic {
-      width: 100%;
-      border-radius: 12px;
-    }
-
-    .hearts {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3rem;
-      animation: float 1s ease-in-out;
-      z-index: 999;
-    }
-
-    @keyframes float {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
-    }
-
-    #allUsers {
-      max-width: 400px;
-      margin: 0 auto;
-      text-align: left;
-    }
-
-    .user {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      background-color: #f2f2f2;
-      margin-bottom: 8px;
-      border-radius: 10px;
-    }
-
-    .dark-mode .user {
-      background-color: #2a2a2a;
-    }
-
-    .user .status {
-      font-size: 18px;
-    }
-
-    .user .user-name {
-      font-size: 16px;
-    }
-
     .footer {
       background-color: #ff4da6;
       padding: 1rem;
       text-align: center;
       margin-top: 2rem;
     }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      background-color: #ff4da6;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #userList {
+      max-width: 600px;
+      margin: 2rem auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .user-card {
+      background-color: #f8f8f8;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .dark-mode .user-card {
+      background-color: #2a2a2a;
+    }
+
+    .user-card img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid gray;
+    }
+
+    .user-card.online img {
+      border-color: limegreen;
+    }
+
+    .user-card .info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-card .info h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .user-card .info p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
   </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>SimpZone</h1>
+    <div class="nav-links">
+      <a href="matches.html">Matches</a>
+      <a href="messages.html">Messages</a>
+      <a href="#" id="darkToggle" class="dark-toggle" onclick="toggleDarkMode()">Dark Mode</a>
+    </div>
+  </div>
+
+  <h2>Welcome to SimpZone 💘</h2>
+  <div id="userList"></div>
+
+  <div class="footer">
+    <button onclick="location.href='create-profile.html'">Create Profile</button>
+    <button onclick="location.href='login.html'">Logout</button>
+  </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -191,138 +179,42 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const rtdb = getDatabase(app);
+    const db = getDatabase(app);
 
-    const allUsersDiv = document.getElementById("allUsers");
-    const searchInput = document.getElementById("searchInput");
+    const userListDiv = document.getElementById("userList");
 
-    function renderUsers(users, filter = "") {
-      allUsersDiv.innerHTML = '';
-      const onlineUsers = [];
-      const offlineUsers = [];
-
-      for (const uid in users) {
-        const user = users[uid];
-        if (!user) continue;
-
-        const name = user.displayName || "Unnamed User";
-        const isOnline = user.online;
-        const statusColor = isOnline ? 'green' : 'gray';
-
-        // Ensure there is a photoUrl or fallback image
-        const profilePic = user.photoUrl || 'default.jpg';
-
-        // Create profile card HTML dynamically
-        const userCard = `
-          <div class="profile-card" onclick="window.location.href='profile.html?uid=${uid}'">
-            <img src="${profilePic}" class="profile-pic" alt="${name}" />
-            <h3>${name}</h3>
-            <p>Status: <span style="color: ${statusColor}">${isOnline ? 'Online' : 'Offline'}</span></p>
-          </div>
-        `;
-
-        // Filter by search term
-        if (name.toLowerCase().includes(filter.toLowerCase())) {
-          if (isOnline) {
-            onlineUsers.push(userCard);
-          } else {
-            offlineUsers.push(userCard);
-          }
-        }
-      }
-
-      // Display online first, then offline
-      allUsersDiv.innerHTML = [...onlineUsers, ...offlineUsers].join('');
-    }
-
-    onValue(ref(rtdb, 'users'), snapshot => {
+    const usersRef = ref(db, "users");
+    onValue(usersRef, (snapshot) => {
+      userListDiv.innerHTML = ""; // Clear existing users
       const users = snapshot.val();
       if (users) {
-        renderUsers(users);
+        Object.entries(users).forEach(([userId, user]) => {
+          const card = document.createElement("div");
+          card.className = `user-card ${user.online ? 'online' : ''}`;
+          card.onclick = () => location.href = `profile.html?uid=${userId}`;
+          card.innerHTML = `
+            <img src="${user.photoUrl || 'default.jpg'}" alt="${user.displayName || 'User'}">
+            <div class="info">
+              <h3>${user.displayName || 'Unnamed User'}</h3>
+              <p>${user.online ? "🟢 Online" : "⚪ Offline"}</p>
+            </div>
+          `;
+          userListDiv.appendChild(card);
+        });
       }
     });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            document.getElementById("welcomeMessage").textContent = `Welcome ${userData.name} 💘`;
-            localStorage.setItem("user", user.uid);
-          } else {
-            document.getElementById("welcomeMessage").textContent = "Welcome 💘";
-          }
-        } catch (err) {
-          console.error("Failed to fetch user data:", err);
-          document.getElementById("welcomeMessage").textContent = "Welcome 💘";
-        }
-      } else {
-        localStorage.removeItem("user");
-        window.location.href = "login.html";
-      }
-    });
-
-    window.logout = () => {
-      localStorage.removeItem("user");
-      signOut(auth).then(() => window.location.href = "login.html");
-    };
-
-    window.goToProfile = () => {
-      window.location.href = "create-profile.html";
-    };
-
-    window.match = () => {
-      document.getElementById("matchSound").play();
-      const hearts = document.createElement('div');
-      hearts.innerHTML = "💖💞💘💗";
-      hearts.classList.add('hearts');
-      document.body.appendChild(hearts);
-      setTimeout(() => hearts.remove(), 1500);
-    };
-
-    window.toggleDarkMode = () => {
+    function toggleDarkMode() {
       const isDark = document.body.classList.toggle("dark-mode");
       localStorage.setItem("darkMode", isDark);
       document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
-    };
+    }
 
-    // Check saved dark mode preference
+    // Restore dark mode if set
     if (localStorage.getItem("darkMode") === "true") {
       document.body.classList.add("dark-mode");
       document.getElementById("darkToggle").textContent = "Light Mode";
     }
-
-    searchInput.addEventListener('input', function() {
-      renderUsers(users, searchInput.value);
-    });
   </script>
-</head>
-<body>
-  <div class="navbar">
-    <h1>SimpZone</h1>
-    <div class="nav-links">
-      <a href="matches.html">Matches</a>
-      <a href="messages.html">Messages</a>
-      <a href="index.html" id="darkToggle" class="dark-toggle" onclick="toggleDarkMode()">Dark Mode</a>
-    </div>
-  </div>
-  <div id="mainContent">
-    <h2>Find New Friends 💘</h2>
-    <p id="welcomeMessage">Welcome 💘</p>
-    <input type="text" id="searchInput" placeholder="Search users..." />
-    <div id="allUsers">
-      <!-- Users will be dynamically rendered here -->
-    </div>
-  </div>
-  <div class="footer">
-    <button onclick="logout()">Logout</button>
-    <button onclick="goToProfile()">Create Profile</button>
-    <button onclick="match()">Match</button>
-  </div>
-  <audio id="matchSound" src="match_sound.mp3"></audio>
 </body>
 </html>
