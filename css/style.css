@@ -1,3 +1,10 @@
+.navbar button,
+.chat-input button {
+  border-radius: 20px;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
 .message {
   max-width: 70%;
   padding: 12px 15px;
