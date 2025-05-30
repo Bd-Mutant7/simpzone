@@ -113,16 +113,10 @@
       max-width: 300px;
       margin: 2rem auto;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.3s;
     }
 
     .dark-mode .profile-card {
       background: #333;
-    }
-
-    .profile-card:hover {
-      transform: scale(1.05);
     }
 
     .profile-pic {
@@ -179,16 +173,6 @@
       text-align: center;
       margin-top: 2rem;
     }
-
-    .match-suggestion {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .match-suggestion .profile-card {
-      cursor: pointer;
-    }
   </style>
 
   <script type="module">
@@ -217,32 +201,22 @@
 
     function renderUsers(users, filter = "") {
       allUsersDiv.innerHTML = '';
-      const onlineUsers = [];
-      const offlineUsers = [];
-
       for (const uid in users) {
         const user = users[uid];
         const name = user.displayName || "Unnamed User";
         const isOnline = user.online;
         const statusColor = isOnline ? 'green' : 'gray';
-        const userCard = `
-          <div class="profile-card" onclick="window.location.href='profile.html?uid=${uid}'">
-            <img src="${user.photoUrl || 'default.jpg'}" class="profile-pic" alt="${name}" />
-            <h3>${name}</h3>
-            <p>Status: <span style="color: ${statusColor}">${isOnline ? 'Online' : 'Offline'}</span></p>
-          </div>
-        `;
 
         if (name.toLowerCase().includes(filter.toLowerCase())) {
-          if (isOnline) {
-            onlineUsers.push(userCard);
-          } else {
-            offlineUsers.push(userCard);
-          }
+          const userDiv = document.createElement('div');
+          userDiv.className = 'user';
+          userDiv.innerHTML = `
+            <span class="status" style="color: ${statusColor}">●</span>
+            <span class="user-name">${name}</span>
+          `;
+          allUsersDiv.appendChild(userDiv);
         }
       }
-
-      allUsersDiv.innerHTML = [...onlineUsers, ...offlineUsers].join('');
     }
 
     onValue(ref(rtdb, 'users'), snapshot => {
@@ -328,19 +302,20 @@
   <button onclick="goToProfile()">View/Edit My Profile</button>
 
   <div id="mainContent">
-    <div class="match-suggestion">
-      <div class="profile-card" onclick="window.location.href='profile.html?uid=1'">
-        <img src="images/user1.jpg" alt="User" class="profile-pic">
-        <h3>Emily, 24</h3>
-        <p>Loves coffee, travel, and cats 😻</p>
-        <button onclick="match()">💘 Match</button>
-      </div>
-      <div class="profile-card" onclick="window.location.href='profile.html?uid=2'">
-        <img src="images/user2.jpg" alt="User" class="profile-pic">
-        <h3>Jason, 27</h3>
-        <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
-        <button onclick="match()">💘 Match</button>
-      </div>
+    <div class="profile-card">
+      <img src="images/user1.jpg" alt="User" class="profile-pic">
+      <h3>Emily, 24</h3>
+      <p>Loves coffee, travel, and cats 😻</p>
+      <button onclick="match()">💘 Match</button>
+      <button onclick="window.location.href='messages.html?to=Emily'">💬 Message</button>
+    </div>
+
+    <div class="profile-card">
+      <img src="images/user2.jpg" alt="User" class="profile-pic">
+      <h3>Jason, 27</h3>
+      <p>Bookworm 📚 | Hiking Enthusiast 🏞️</p>
+      <button onclick="match()">💘 Match</button>
+      <button onclick="window.location.href='messages.html?to=Jason'">💬 Message</button>
     </div>
   </div>
 
