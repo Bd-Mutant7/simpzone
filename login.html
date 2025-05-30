@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -128,6 +128,16 @@
       padding: 1rem;
       font-size: 0.9rem;
       user-select: none;
+    }
+
+    a {
+      color: #ff69b4;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
 
     @media (max-width: 500px) {
@@ -293,6 +303,10 @@
       <button id="registerBtn" type="button">Register</button>
       <button id="forgotPasswordBtn" type="button">Forgot Password?</button>
       <p id="message" aria-live="polite" style="color: red; margin-top: 1rem;"></p>
+      <p style="margin-top: 1rem;">
+        Don't have an account?
+        <a href="register.html">Register here</a>
+      </p>
     </div>
   </div>
 
