@@ -60,7 +60,6 @@
   </style>
 </head>
 <body>
-
   <h2>Your Profile</h2>
 
   <div class="profile-view" id="profileDisplay" style="display:none;">
@@ -81,7 +80,13 @@
     <p class="message" id="message"></p>
   </form>
 
-  <!-- Firebase SDKs -->
+  <div class="user-container">
+    <h3>Example User</h3>
+    <p>Name: Jane Doe</p>
+    <p>Bio: Loves anime, coffee, and cats.</p>
+    <button class="message-btn" onclick="alert('Messaging Jane Doe...');">Message</button>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
@@ -149,7 +154,7 @@
       loadUserProfile();
     });
 
-    async function loadUserProfile() {
+    function loadUserProfile() {
       const userRef = ref(db, 'users/' + currentUserUID);
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
@@ -181,17 +186,17 @@
       const file = profilePicInput.files[0];
       if (!file) return;
 
-      const maxSize = 2 * 1024 * 1024; // 2MB
+      const maxSize = 2 * 1024 * 1024;
       const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
 
       if (!validTypes.includes(file.type)) {
-        message.textContent = "❌ Invalid file type. Please use JPG, PNG or GIF.";
+        message.textContent = "❌ Invalid file type. Use JPG, PNG or GIF.";
         profilePicInput.value = "";
         return;
       }
 
       if (file.size > maxSize) {
-        message.textContent = "❌ File too large. Max size is 2MB.";
+        message.textContent = "❌ File too large. Max is 2MB.";
         profilePicInput.value = "";
         return;
       }
