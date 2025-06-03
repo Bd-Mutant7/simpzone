@@ -60,8 +60,6 @@
   </style>
 </head>
 <body>
-
-  <!-- ✅ Load Navbar -->
   <div data-include="nav.html"></div>
 
   <h2>Your Profile</h2>
@@ -93,10 +91,8 @@
     <button class="message-btn" onclick="alert('Messaging Jane Doe...');">Message</button>
   </div>
 
-  <!-- ✅ Load Footer -->
   <div data-include="footer.html"></div>
 
-  <!-- ✅ Include nav/footer -->
   <script>
     async function includeHTML() {
       const includeElements = document.querySelectorAll('[data-include]');
@@ -112,19 +108,18 @@
         }
       }
     }
-
     includeHTML();
   </script>
 
-  <!-- ✅ Firebase logic -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
       authDomain: "simpzone-c261f.firebaseapp.com",
+      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com",
       projectId: "simpzone-c261f",
       storageBucket: "simpzone-c261f.appspot.com",
       messagingSenderId: "112722316822",
@@ -132,8 +127,8 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
     const viewProfileBtn = document.getElementById("viewProfileBtn");
     const profileDisplay = document.getElementById("profileDisplay");
@@ -166,19 +161,19 @@
     viewProfileBtn.addEventListener("click", async () => {
       if (!currentUserUID) return;
 
-      const userRef = doc(db, "users", currentUserUID);
-      const docSnap = await getDoc(userRef);
+      const userRef = ref(db, 'users/' + currentUserUID);
+      const snapshot = await get(userRef);
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        displayName.textContent = data.name || "";
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        displayName.textContent = data.displayName || data.name || "";
         displayAge.textContent = data.age || "";
         displayBio.textContent = data.bio || "";
 
-        if (data.profilePic) {
-          displayPic.src = data.profilePic;
+        if (data.imageUrl || data.profilePic) {
+          displayPic.src = data.imageUrl || data.profilePic;
           displayPic.style.display = "block";
-          currentProfilePic = data.profilePic;
+          currentProfilePic = data.imageUrl || data.profilePic;
         }
 
         profileDisplay.style.display = "block";
@@ -225,14 +220,14 @@
       }
 
       try {
-        const userRef = doc(db, "users", currentUserUID);
-        await setDoc(userRef, {
-          name,
+        const userRef = ref(db, 'users/' + currentUserUID);
+        await set(userRef, {
+          displayName: name,
           age,
           bio,
-          profilePic: profilePicData,
+          imageUrl: profilePicData,
           updatedAt: new Date().toISOString()
-        }, { merge: true });
+        });
 
         message.textContent = "Profile updated successfully!";
         setTimeout(() => window.location.reload(), 1000);
