@@ -64,8 +64,6 @@
 
   <h2>Your Profile</h2>
 
-  <button id="viewProfileBtn">View My Profile</button>
-
   <div class="profile-view" id="profileDisplay" style="display:none;">
     <p><strong>Name:</strong> <span id="displayName"></span></p>
     <p><strong>Age:</strong> <span id="displayAge"></span></p>
@@ -115,6 +113,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
@@ -129,8 +128,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    const storage = getStorage(app);
 
-    const viewProfileBtn = document.getElementById("viewProfileBtn");
     const profileDisplay = document.getElementById("profileDisplay");
     const editProfileForm = document.getElementById("editProfileForm");
     const editBtn = document.getElementById("editBtn");
@@ -150,17 +149,16 @@
     let currentUserUID = null;
     let currentProfilePic = "";
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
       } else {
         currentUserUID = user.uid;
+        await loadUserProfile();
       }
     });
 
-    viewProfileBtn.addEventListener("click", async () => {
-      if (!currentUserUID) return;
-
+    async function loadUserProfile() {
       const userRef = ref(db, 'users/' + currentUserUID);
       const snapshot = await get(userRef);
 
@@ -170,18 +168,15 @@
         displayAge.textContent = data.age || "";
         displayBio.textContent = data.bio || "";
 
-        if (data.imageUrl || data.profilePic) {
-          displayPic.src = data.imageUrl || data.profilePic;
+        if (data.imageUrl) {
+          displayPic.src = data.imageUrl;
           displayPic.style.display = "block";
-          currentProfilePic = data.imageUrl || data.profilePic;
+          currentProfilePic = data.imageUrl;
         }
 
         profileDisplay.style.display = "block";
-        viewProfileBtn.style.display = "none";
-      } else {
-        alert("Profile not found.");
       }
-    });
+    }
 
     editBtn.addEventListener("click", () => {
       nameInput.value = displayName.textContent;
@@ -197,12 +192,8 @@
     profilePicInput.addEventListener("change", () => {
       const file = profilePicInput.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          previewImg.src = e.target.result;
-          previewImg.style.display = "block";
-        };
-        reader.readAsDataURL(file);
+        previewImg.src = URL.createObjectURL(file);
+        previewImg.style.display = "block";
       }
     });
 
@@ -212,11 +203,18 @@
       const name = nameInput.value.trim();
       const age = ageInput.value.trim();
       const bio = bioInput.value.trim();
-      let profilePicData = previewImg.src || "";
+      let profilePicUrl = currentProfilePic;
 
       if (!name || !age || !bio) {
         message.textContent = "All fields are required!";
         return;
+      }
+
+      const file = profilePicInput.files[0];
+      if (file) {
+        const imgRef = storageRef(storage, 'profilePics/' + currentUserUID);
+        await uploadBytes(imgRef, file);
+        profilePicUrl = await getDownloadURL(imgRef);
       }
 
       try {
@@ -225,7 +223,7 @@
           displayName: name,
           age,
           bio,
-          imageUrl: profilePicData,
+          imageUrl: profilePicUrl,
           updatedAt: new Date().toISOString()
         });
 
