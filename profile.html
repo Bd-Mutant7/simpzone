@@ -154,6 +154,19 @@
         window.location.href = "login.html";
       } else {
         currentUserUID = user.uid;
+        const userRef = ref(db, 'users/' + currentUserUID);
+        const snapshot = await get(userRef);
+
+        if (!snapshot.exists()) {
+          await set(userRef, {
+            displayName: user.displayName || "",
+            age: "",
+            bio: "",
+            imageUrl: "",
+            createdAt: new Date().toISOString()
+          });
+        }
+
         await loadUserProfile();
       }
     });
