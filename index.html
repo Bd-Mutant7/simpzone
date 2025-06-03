@@ -224,13 +224,17 @@
     function displayUsers(users) {
       userListDiv.innerHTML = "";
       Object.entries(users).forEach(([userId, user]) => {
+        const imageUrl = user.imageUrl || "https://via.placeholder.com/100?text=User";
+        const displayName = user.displayName || "Unnamed User";
+        const online = user.online ? "🟢 Online" : "⚪ Offline";
+
         const card = document.createElement("div");
         card.className = `user-card ${user.online ? 'online' : ''}`;
         card.onclick = () => location.href = `profile.html?uid=${userId}`;
         card.innerHTML = `
-          <img src="${user.photoUrl || 'default.jpg'}" alt="${user.displayName || 'User'}">
-          <h3>${user.displayName || 'Unnamed User'}</h3>
-          <p>${user.online ? "🟢 Online" : "⚪ Offline"}</p>
+          <img src="${imageUrl}" alt="${displayName}">
+          <h3>${displayName}</h3>
+          <p>${online}</p>
         `;
         userListDiv.appendChild(card);
       });
@@ -242,7 +246,6 @@
       document.getElementById("darkToggle").textContent = isDark ? "Light Mode" : "Dark Mode";
     }
 
-    // Load dark mode state on startup
     if (localStorage.getItem("darkMode") === "true") {
       document.body.classList.add("dark-mode");
       document.getElementById("darkToggle").textContent = "Light Mode";
