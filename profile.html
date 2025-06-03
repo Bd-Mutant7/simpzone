@@ -60,7 +60,6 @@
   </style>
 </head>
 <body>
-  <div data-include="nav.html"></div>
 
   <h2>Your Profile</h2>
 
@@ -82,52 +81,30 @@
     <p class="message" id="message"></p>
   </form>
 
-  <div class="user-container">
-    <h3>Example User</h3>
-    <p>Name: Jane Doe</p>
-    <p>Bio: Loves anime, coffee, and cats.</p>
-    <button class="message-btn" onclick="alert('Messaging Jane Doe...');">Message</button>
-  </div>
-
-  <div data-include="footer.html"></div>
-
-  <script>
-    async function includeHTML() {
-      const includeElements = document.querySelectorAll('[data-include]');
-      for (const el of includeElements) {
-        const file = el.getAttribute('data-include');
-        try {
-          const res = await fetch(file);
-          if (!res.ok) throw new Error('Could not load ' + file);
-          const text = await res.text();
-          el.innerHTML = text;
-        } catch (e) {
-          el.innerHTML = "<p style='color:red;'>Failed to load: " + file + "</p>";
-        }
-      }
-    }
-    includeHTML();
-  </script>
-
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+    import {
+      getDatabase, ref, get, set, update, onValue
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import {
+      getStorage, ref as storageRef, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHRmtPI-FcsH2VXsbnXFhedv4e5ay-xco",
       authDomain: "simpzone-c261f.firebaseapp.com",
-      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com",
       projectId: "simpzone-c261f",
       storageBucket: "simpzone-c261f.appspot.com",
       messagingSenderId: "112722316822",
-      appId: "1:112722316822:web:40f25acde13d98821f2f37"
+      appId: "1:112722316822:web:40f25acde13d98821f2f37",
+      databaseURL: "https://simpzone-c261f-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth(app);
+    const db = getDatabase(app);
     const storage = getStorage(app);
 
     const profileDisplay = document.getElementById("profileDisplay");
@@ -147,67 +124,84 @@
     const displayPic = document.getElementById("displayPic");
 
     let currentUserUID = null;
-    let currentProfilePic = "";
+    let currentImageUrl = "";
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
-      } else {
-        currentUserUID = user.uid;
-        const userRef = ref(db, 'users/' + currentUserUID);
-        const snapshot = await get(userRef);
-
-        if (!snapshot.exists()) {
-          await set(userRef, {
-            displayName: user.displayName || "",
-            age: "",
-            bio: "",
-            imageUrl: "",
-            createdAt: new Date().toISOString()
-          });
-        }
-
-        await loadUserProfile();
+        return;
       }
+
+      currentUserUID = user.uid;
+      const userRef = ref(db, 'users/' + currentUserUID);
+      const snapshot = await get(userRef);
+
+      if (!snapshot.exists()) {
+        await set(userRef, {
+          displayName: user.displayName || "Unnamed",
+          age: "",
+          bio: "",
+          imageUrl: "",
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      loadUserProfile();
     });
 
     async function loadUserProfile() {
       const userRef = ref(db, 'users/' + currentUserUID);
-      const snapshot = await get(userRef);
-
-      if (snapshot.exists()) {
+      onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        displayName.textContent = data.displayName || data.name || "";
+        displayName.textContent = data.displayName || "";
         displayAge.textContent = data.age || "";
         displayBio.textContent = data.bio || "";
 
         if (data.imageUrl) {
           displayPic.src = data.imageUrl;
           displayPic.style.display = "block";
-          currentProfilePic = data.imageUrl;
+          currentImageUrl = data.imageUrl;
         }
 
         profileDisplay.style.display = "block";
-      }
+      });
     }
 
     editBtn.addEventListener("click", () => {
+      editProfileForm.style.display = "block";
+      profileDisplay.style.display = "none";
       nameInput.value = displayName.textContent;
       ageInput.value = displayAge.textContent;
       bioInput.value = displayBio.textContent;
-      previewImg.src = currentProfilePic || "";
-      previewImg.style.display = currentProfilePic ? "block" : "none";
-
-      profileDisplay.style.display = "none";
-      editProfileForm.style.display = "block";
+      previewImg.src = currentImageUrl || "";
+      previewImg.style.display = currentImageUrl ? "block" : "none";
     });
 
     profilePicInput.addEventListener("change", () => {
       const file = profilePicInput.files[0];
-      if (file) {
-        previewImg.src = URL.createObjectURL(file);
-        previewImg.style.display = "block";
+      if (!file) return;
+
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
+
+      if (!validTypes.includes(file.type)) {
+        message.textContent = "❌ Invalid file type. Please use JPG, PNG or GIF.";
+        profilePicInput.value = "";
+        return;
       }
+
+      if (file.size > maxSize) {
+        message.textContent = "❌ File too large. Max size is 2MB.";
+        profilePicInput.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewImg.style.display = "block";
+      };
+      reader.readAsDataURL(file);
     });
 
     editProfileForm.addEventListener("submit", async (e) => {
@@ -216,35 +210,35 @@
       const name = nameInput.value.trim();
       const age = ageInput.value.trim();
       const bio = bioInput.value.trim();
-      let profilePicUrl = currentProfilePic;
+      const file = profilePicInput.files[0];
 
       if (!name || !age || !bio) {
-        message.textContent = "All fields are required!";
+        message.textContent = "All fields are required.";
         return;
       }
 
-      const file = profilePicInput.files[0];
-      if (file) {
-        const imgRef = storageRef(storage, 'profilePics/' + currentUserUID);
-        await uploadBytes(imgRef, file);
-        profilePicUrl = await getDownloadURL(imgRef);
-      }
-
       try {
-        const userRef = ref(db, 'users/' + currentUserUID);
-        await set(userRef, {
+        let imageUrl = currentImageUrl;
+
+        if (file) {
+          const imgRef = storageRef(storage, `profilePics/${currentUserUID}`);
+          await uploadBytes(imgRef, file);
+          imageUrl = await getDownloadURL(imgRef);
+        }
+
+        await update(ref(db, 'users/' + currentUserUID), {
           displayName: name,
           age,
           bio,
-          imageUrl: profilePicUrl,
+          imageUrl,
           updatedAt: new Date().toISOString()
         });
 
-        message.textContent = "Profile updated successfully!";
+        message.textContent = "✅ Profile updated!";
         setTimeout(() => window.location.reload(), 1000);
       } catch (error) {
-        console.error("Error saving profile:", error);
-        message.textContent = "Failed to save profile.";
+        console.error("Error:", error);
+        message.textContent = "❌ Failed to save profile.";
       }
     });
   </script>
